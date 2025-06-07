@@ -27,6 +27,8 @@ impl Default for Character {
     }
 }
 
+const SPELL_COST: i64 = 3;
+
 #[derive(Copy, Clone)]
 enum MonsterEnum {
     Player = 0,
@@ -217,6 +219,7 @@ fn battle(ctx: &mut Context, monster: MonsterEnum) {
                     println!("{}은(는) 주문을 외웠다.", ctx.characters[i].name);
 
                     ctx.characters[i].hp = ctx.characters[i].max_hp;
+                    ctx.characters[i].mp -= SPELL_COST;
 
                     println!("{}의 상처가 회복되었다.", ctx.characters[i].name);
 
