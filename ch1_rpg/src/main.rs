@@ -108,13 +108,14 @@ fn battle(ctx: &mut Context, monster: MonsterEnum) {
     draw_battle_screen(ctx);
     println!("{}이(가) 나타났다!", ctx.characters[monster as usize].name);
     loop {
+        select_command(ctx);
         for i in 0..CharacterEnum::Max as usize {
             draw_battle_screen(ctx);
             match ctx.characters[i].command {
                 CommandEnum::Fight => {
                     println!("{}의 공격", ctx.characters[i].name);
                     let mut line = String::new();
-                    let read_bytes = std::io::stdin().read_line(&mut line).unwrap();
+                    let _ = std::io::stdin().read_line(&mut line).unwrap();
                     break;
                 }
                 CommandEnum::Spell => {
@@ -128,6 +129,19 @@ fn battle(ctx: &mut Context, monster: MonsterEnum) {
                 }
             }
         }
+    }
+}
+
+fn select_command(ctx: &Context) {
+    let command_names = ["싸운다", "주문", "도망친다"];
+    loop {
+        draw_battle_screen(ctx);
+
+        for command_name in command_names {
+            println!("{}", command_name);
+        }
+        let mut line = String::new();
+        let _ = std::io::stdin().read_line(&mut line).unwrap();
     }
 }
 
