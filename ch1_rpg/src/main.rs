@@ -1,4 +1,4 @@
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Clone)]
 struct Character {
     hp: isize,
     max_hp: isize,
@@ -6,6 +6,21 @@ struct Character {
     max_mp: isize,
     name: String,
     aa: String, // ascii art
+    command: CommandEnum,
+}
+
+impl Default for Character {
+    fn default() -> Self {
+        Character {
+            hp: 0,
+            max_hp: 0,
+            mp: 0,
+            max_mp: 0,
+            name: String::new(),
+            aa: String::new(),
+            command: CommandEnum::Max,
+        }
+    }
 }
 
 #[derive(Copy, Clone)]
@@ -19,6 +34,14 @@ enum MonsterEnum {
 enum CharacterEnum {
     Player = 0,
     Monster = 1,
+    Max,
+}
+
+#[derive(Debug, Copy, Clone)]
+enum CommandEnum {
+    Fight = 0,
+    Spell = 1,
+    Run = 2,
     Max,
 }
 
@@ -37,7 +60,8 @@ impl Context {
                     mp: 15,
                     max_mp: 15,
                     name: "용사".to_string(),
-                    aa: "".to_string(),
+                    aa: String::new(),
+                    command: CommandEnum::Max,
                 },
                 Character {
                     hp: 3,
@@ -46,6 +70,7 @@ impl Context {
                     max_mp: 0,
                     name: "슬라임".to_string(),
                     aa: "/·Д·\\\n".to_string(),
+                    command: CommandEnum::Max,
                 },
             ],
             characters: [Character::default(), Character::default()],
