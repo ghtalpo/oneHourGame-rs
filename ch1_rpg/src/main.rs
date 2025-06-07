@@ -188,7 +188,7 @@ fn select_command(ctx: &mut Context) {
                     .increase();
             }
             _ => {
-                println!("what? {}", line);
+                return;
             }
         }
     }
