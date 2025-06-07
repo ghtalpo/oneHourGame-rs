@@ -161,7 +161,12 @@ fn battle(ctx: &mut Context, monster: MonsterEnum) {
     ctx.characters[CharacterEnum::Monster as usize].target = CharacterEnum::Player;
 
     draw_battle_screen(ctx);
-    println!("{}이(가) 나타났다!", ctx.characters[monster as usize].name);
+    println!(
+        "{}이(가) 나타났다!",
+        ctx.characters[CharacterEnum::Monster as usize].name
+    );
+    let mut line = String::new();
+    let _ = std::io::stdin().read_line(&mut line).unwrap();
     loop {
         select_command(ctx);
         for i in 0..CharacterEnum::Max as usize {
@@ -255,5 +260,6 @@ fn select_command(ctx: &mut Context) {
 fn main() {
     let mut ctx = Context::new();
     init(&mut ctx);
-    battle(&mut ctx, MonsterEnum::Slime);
+    // battle(&mut ctx, MonsterEnum::Slime);
+    battle(&mut ctx, MonsterEnum::Boss);
 }
