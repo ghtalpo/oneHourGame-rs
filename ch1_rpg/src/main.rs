@@ -170,21 +170,29 @@ fn battle(ctx: &mut Context, monster: MonsterEnum) {
     loop {
         select_command(ctx);
         for i in 0..CharacterEnum::Max as usize {
+            // let _ = std::io::stdin().read_line(&mut line).unwrap();
             draw_battle_screen(ctx);
             match ctx.characters[i].command {
                 CommandEnum::Fight => {
                     println!("{}의 공격", ctx.characters[i].name);
                     let mut line = String::new();
                     let _ = std::io::stdin().read_line(&mut line).unwrap();
-                    let attack = ctx.characters[CharacterEnum::Player as usize].attack;
+                    let attack = ctx.characters[i].attack;
                     let damage = 1 + random_range(0..attack);
-                    let target = ctx.characters[CharacterEnum::Player as usize].target;
+                    let target = ctx.characters[i].target;
                     ctx.characters[target as usize].hp -= damage;
+
+                    println!(
+                        "{}에게 {}의 데미지!",
+                        ctx.characters[target as usize].name, damage
+                    );
 
                     if ctx.characters[target as usize].hp <= 0 {
                         // ctx.characters[target as usize].hp = 0;
                         match target {
-                            CharacterEnum::Player => {}
+                            CharacterEnum::Player => {
+                                println!("당신은 사망했습니다.",);
+                            }
                             CharacterEnum::Monster => {
                                 ctx.characters[target as usize].aa.clear();
                                 draw_battle_screen(ctx);
@@ -202,23 +210,12 @@ fn battle(ctx: &mut Context, monster: MonsterEnum) {
                     if ctx.characters[target as usize].hp < 0 {
                         ctx.characters[target as usize].hp = 0;
                     }
-                    draw_battle_screen(ctx);
-                    println!(
-                        "{}에게 {}의 데미지!",
-                        ctx.characters[target as usize].name, damage
-                    );
+                    // draw_battle_screen(ctx);
                     let _ = std::io::stdin().read_line(&mut line).unwrap();
-                    break;
                 }
-                CommandEnum::Spell => {
-                    break;
-                }
-                CommandEnum::Run => {
-                    break;
-                }
-                CommandEnum::Max => {
-                    break;
-                }
+                CommandEnum::Spell => {}
+                CommandEnum::Run => {}
+                CommandEnum::Max => {}
             }
         }
     }
