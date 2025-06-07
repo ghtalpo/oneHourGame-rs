@@ -161,6 +161,18 @@ fn battle(ctx: &mut Context, monster: MonsterEnum) {
                     let _ = std::io::stdin().read_line(&mut line).unwrap();
                     let attack = ctx.characters[CharacterEnum::Player as usize].attack;
                     let damage = 1 + random_range(0..attack);
+                    let target = ctx.characters[CharacterEnum::Player as usize].target;
+                    ctx.characters[target as usize].hp -= damage;
+
+                    if ctx.characters[target as usize].hp < 0 {
+                        ctx.characters[target as usize].hp = 0;
+                    }
+                    draw_battle_screen(ctx);
+                    println!(
+                        "{}에게 {}의 데미지!",
+                        ctx.characters[target as usize].name, damage
+                    );
+                    let _ = std::io::stdin().read_line(&mut line).unwrap();
                     break;
                 }
                 CommandEnum::Spell => {
