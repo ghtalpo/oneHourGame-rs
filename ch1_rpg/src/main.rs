@@ -43,7 +43,7 @@ impl context {
                     mp: 0,
                     max_mp: 0,
                     name: "슬라임".to_string(),
-                    aa: "/·Д·\\".to_string(),
+                    aa: "/·Д·\\\n".to_string(),
                 },
             ],
             characters: [Character::default(), Character::default()],
@@ -57,14 +57,21 @@ fn init(ctx: &mut context) {
 }
 
 fn draw_battle_screen(ctx: &context) {
-    println!("{}\n", ctx.characters[CharacterEnum::Player as usize].name);
+    println!("{}", ctx.characters[CharacterEnum::Player as usize].name);
     println!(
-        "HP:{}/{} MP:{}/{} \n",
+        "HP:{}/{} MP:{}/{} ",
         ctx.characters[CharacterEnum::Player as usize].hp,
         ctx.characters[CharacterEnum::Player as usize].max_hp,
         ctx.characters[CharacterEnum::Player as usize].mp,
         ctx.characters[CharacterEnum::Player as usize].max_mp
     );
+    print!("{}", ctx.characters[CharacterEnum::Monster as usize].aa);
+    println!(
+        "(HP:{}/{})",
+        ctx.characters[CharacterEnum::Monster as usize].hp,
+        ctx.characters[CharacterEnum::Monster as usize].max_hp,
+    );
+    print!("\n");
 }
 
 fn battle(ctx: &mut context, monster: MonsterEnum) {
@@ -74,10 +81,6 @@ fn battle(ctx: &mut context, monster: MonsterEnum) {
 
 fn main() {
     let mut ctx = context::new();
-    println!("monsters? {:?}", ctx.monsters);
-    println!("characters? {:?}", ctx.characters);
     init(&mut ctx);
-    println!("monsters? {:?}", ctx.monsters);
-    println!("characters? {:?}", ctx.characters);
     battle(&mut ctx, MonsterEnum::Slime);
 }
