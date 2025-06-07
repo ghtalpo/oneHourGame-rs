@@ -1,4 +1,4 @@
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 struct Character {
     hp: isize,
     max_hp: isize,
@@ -7,6 +7,7 @@ struct Character {
     name: String,
     aa: String, // ascii art
     command: CommandEnum,
+    target: CharacterEnum,
 }
 
 impl Default for Character {
@@ -19,6 +20,7 @@ impl Default for Character {
             name: String::new(),
             aa: String::new(),
             command: CommandEnum::Fight,
+            target: CharacterEnum::Max,
         }
     }
 }
@@ -91,6 +93,7 @@ impl Context {
                     name: "용사".to_string(),
                     aa: String::new(),
                     command: CommandEnum::Fight,
+                    ..Character::default()
                 },
                 Character {
                     hp: 3,
@@ -100,6 +103,7 @@ impl Context {
                     name: "슬라임".to_string(),
                     aa: "/·Д·\\\n".to_string(),
                     command: CommandEnum::Fight,
+                    ..Character::default()
                 },
             ],
             characters: [Character::default(), Character::default()],
@@ -134,6 +138,10 @@ fn draw_battle_screen(ctx: &Context) {
 
 fn battle(ctx: &mut Context, monster: MonsterEnum) {
     ctx.characters[CharacterEnum::Monster as usize] = ctx.monsters[monster as usize].clone();
+
+    ctx.characters[CharacterEnum::Player as usize].target = CharacterEnum::Monster;
+    ctx.characters[CharacterEnum::Monster as usize].target = CharacterEnum::Player;
+
     draw_battle_screen(ctx);
     println!("{}이(가) 나타났다!", ctx.characters[monster as usize].name);
     loop {
