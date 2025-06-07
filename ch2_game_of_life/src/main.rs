@@ -1,9 +1,12 @@
+use getch_rs::Getch;
+use getch_rs::Key;
+
 const FieldWidth: usize = 12;
 const FieldHeight: usize = 12;
 
-#[derive(Debug)]
 struct Context {
     field: Vec<bool>, //bool[FieldHeight][FieldWidth];
+    g: Getch,
 }
 
 impl Context {
@@ -14,12 +17,35 @@ impl Context {
         field[2 * FieldWidth + 0] = true;
         field[2 * FieldWidth + 1] = true;
         field[2 * FieldWidth + 2] = true;
-        Self { field }
+        Self {
+            field,
+            g: Getch::new(),
+        }
+    }
+    pub fn draw_field(&self) {
+        clearscreen::clear().unwrap();
+
+        for y in 0..FieldHeight {
+            for x in 0..FieldWidth {
+                print!(
+                    "{}",
+                    if self.field[y * FieldWidth + x] {
+                        "■"
+                    } else {
+                        "□"
+                    }
+                );
+            }
+            println!();
+        }
+
+        let _ = self.g.getch();
     }
 }
 
 fn main() {
-    // loop {}
-    let mut context = Context::new();
-    println!("{:?}", context);
+    let ctx = Context::new();
+    loop {
+        ctx.draw_field();
+    }
 }
