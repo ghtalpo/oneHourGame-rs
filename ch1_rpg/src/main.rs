@@ -91,11 +91,11 @@ impl Context {
         Self {
             monsters: [
                 Character {
-                    hp: 15,
-                    max_hp: 15,
+                    hp: 100,
+                    max_hp: 100,
                     mp: 15,
                     max_mp: 15,
-                    attack: 3,
+                    attack: 30,
                     name: "용사".to_string(),
                     aa: String::new(),
                     command: CommandEnum::Fight,
