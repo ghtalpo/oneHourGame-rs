@@ -214,7 +214,10 @@ fn battle(ctx: &mut Context, monster: MonsterEnum) {
                     let _ = std::io::stdin().read_line(&mut line).unwrap();
                 }
                 CommandEnum::Spell => {}
-                CommandEnum::Run => {}
+                CommandEnum::Run => {
+                    println!("{}은(는) 도망쳤다.", ctx.characters[i].name);
+                    return;
+                }
                 CommandEnum::Max => {}
             }
         }
