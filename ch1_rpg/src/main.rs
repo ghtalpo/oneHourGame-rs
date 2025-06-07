@@ -22,12 +22,12 @@ enum CharacterEnum {
     Max,
 }
 
-struct context {
+struct Context {
     monsters: [Character; MonsterEnum::Max as usize],
     characters: [Character; CharacterEnum::Max as usize],
 }
 
-impl context {
+impl Context {
     pub fn new() -> Self {
         Self {
             monsters: [
@@ -53,12 +53,12 @@ impl context {
     }
 }
 
-fn init(ctx: &mut context) {
+fn init(ctx: &mut Context) {
     ctx.characters[CharacterEnum::Player as usize] =
         ctx.monsters[MonsterEnum::Player as usize].clone();
 }
 
-fn draw_battle_screen(ctx: &context) {
+fn draw_battle_screen(ctx: &Context) {
     println!("{}", ctx.characters[CharacterEnum::Player as usize].name);
     println!(
         "HP:{}/{} MP:{}/{} ",
@@ -76,14 +76,14 @@ fn draw_battle_screen(ctx: &context) {
     print!("\n");
 }
 
-fn battle(ctx: &mut context, monster: MonsterEnum) {
+fn battle(ctx: &mut Context, monster: MonsterEnum) {
     ctx.characters[CharacterEnum::Monster as usize] = ctx.monsters[monster as usize].clone();
     draw_battle_screen(ctx);
     println!("{}이(가) 나타났다!", ctx.characters[monster as usize].name);
 }
 
 fn main() {
-    let mut ctx = context::new();
+    let mut ctx = Context::new();
     init(&mut ctx);
     battle(&mut ctx, MonsterEnum::Slime);
 }
