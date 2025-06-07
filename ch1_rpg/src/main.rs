@@ -1,4 +1,4 @@
-#[derive(Debug,Default)]
+#[derive(Debug,Default,Clone)]
 struct Character {
     hp: isize,
     max_hp: isize,
@@ -18,17 +18,35 @@ enum CharacterEnum {
     Max,
 }
 
-fn main() {
-    println!("Hello, world!");
-    let monsters:[Character;MonsterEnum::Max as usize] = [Character {
+struct context {
+    monsters: [Character;MonsterEnum::Max as usize],
+    characters: [Character;CharacterEnum::Max as usize],
+}
+
+impl context {
+    pub fn new() -> Self {
+        Self {
+            monsters:[Character {
         hp: 15,
         max_hp: 15,
         mp: 15,
         max_mp: 15,
         name : "용사".to_string(),
-    }];
-    println!("monsters? {:?}", monsters);
-    let characters:[Character;CharacterEnum::Max as usize] = [Character::default(),Character::default()
-    ];
-    println!("characters? {:?}", characters);
+    }],
+    characters: [Character::default(),Character::default()
+    ]
+        }
+    }
+}
+fn init(ctx: &mut context) {
+    ctx.characters[CharacterEnum::Player as usize] = ctx.monsters[MonsterEnum::Player as usize].clone();
+}
+
+fn main() {
+    let mut ctx = context::new();
+    println!("monsters? {:?}", ctx.monsters);
+    println!("characters? {:?}", ctx.characters);
+    init(&mut ctx);
+    println!("monsters? {:?}", ctx.monsters);
+    println!("characters? {:?}", ctx.characters);
 }
