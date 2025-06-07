@@ -9,14 +9,14 @@ struct Character {
 }
 
 enum MonsterEnum {
-    Player,
-    Slime,
+    Player = 0,
+    Slime = 1,
     Max,
 }
 
 enum CharacterEnum {
-    Player,
-    Monster,
+    Player = 0,
+    Monster = 1,
     Max,
 }
 
@@ -28,21 +28,24 @@ struct context {
 impl context {
     pub fn new() -> Self {
         Self {
-            monsters: [Character {
-                hp: 15,
-                max_hp: 15,
-                mp: 15,
-                max_mp: 15,
-                name: "용사".to_string(),
-                aa: "".to_string(),
-            },Character {
-                hp: 3,
-                max_hp: 3,
-                mp: 0,
-                max_mp: 0,
-                name: "슬라임".to_string(),
-                aa: "/·Д·\\".to_string(),
-            }],
+            monsters: [
+                Character {
+                    hp: 15,
+                    max_hp: 15,
+                    mp: 15,
+                    max_mp: 15,
+                    name: "용사".to_string(),
+                    aa: "".to_string(),
+                },
+                Character {
+                    hp: 3,
+                    max_hp: 3,
+                    mp: 0,
+                    max_mp: 0,
+                    name: "슬라임".to_string(),
+                    aa: "/·Д·\\".to_string(),
+                },
+            ],
             characters: [Character::default(), Character::default()],
         }
     }
@@ -64,7 +67,8 @@ fn draw_battle_screen(ctx: &context) {
     );
 }
 
-fn battle(ctx: &context) {
+fn battle(ctx: &mut context, monster: MonsterEnum) {
+    ctx.characters[CharacterEnum::Monster as usize] = ctx.monsters[monster as usize].clone();
     draw_battle_screen(ctx);
 }
 
@@ -75,5 +79,5 @@ fn main() {
     init(&mut ctx);
     println!("monsters? {:?}", ctx.monsters);
     println!("characters? {:?}", ctx.characters);
-    draw_battle_screen(&ctx);
+    battle(&mut ctx, MonsterEnum::Slime);
 }
