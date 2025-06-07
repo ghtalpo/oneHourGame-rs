@@ -31,6 +31,7 @@ impl Default for Character {
 enum MonsterEnum {
     Player = 0,
     Slime = 1,
+    Boss = 2,
     Max,
 }
 
@@ -107,7 +108,18 @@ impl Context {
                     max_mp: 0,
                     attack: 2,
                     name: "슬라임".to_string(),
-                    aa: "/·Д·\\\n".to_string(),
+                    aa: "/·Д·\\".to_string(),
+                    command: CommandEnum::Fight,
+                    ..Character::default()
+                },
+                Character {
+                    hp: 255,
+                    max_hp: 255,
+                    mp: 0,
+                    max_mp: 0,
+                    attack: 50,
+                    name: "마왕".to_string(),
+                    aa: "  A@A  \nφ(▼皿▼)φ".to_string(),
                     command: CommandEnum::Fight,
                     ..Character::default()
                 },
