@@ -5,10 +5,12 @@ struct Character {
     mp: isize,
     max_mp: isize,
     name: String,
+    aa: String, // ascii art
 }
 
 enum MonsterEnum {
     Player,
+    Slime,
     Max,
 }
 
@@ -32,6 +34,14 @@ impl context {
                 mp: 15,
                 max_mp: 15,
                 name: "용사".to_string(),
+                aa: "".to_string(),
+            },Character {
+                hp: 3,
+                max_hp: 3,
+                mp: 0,
+                max_mp: 0,
+                name: "슬라임".to_string(),
+                aa: "/·Д·\\".to_string(),
             }],
             characters: [Character::default(), Character::default()],
         }
