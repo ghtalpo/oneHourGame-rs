@@ -45,6 +45,35 @@ enum CommandEnum {
     Max,
 }
 
+use std::convert::TryFrom;
+use std::convert::TryInto;
+
+impl TryFrom<usize> for CommandEnum {
+    type Error = ();
+
+    fn try_from(v: usize) -> Result<Self, Self::Error> {
+        match v {
+            x if x == CommandEnum::Fight as usize => Ok(CommandEnum::Fight),
+            x if x == CommandEnum::Spell as usize => Ok(CommandEnum::Spell),
+            x if x == CommandEnum::Run as usize => Ok(CommandEnum::Run),
+            _ => Err(()),
+        }
+    }
+}
+
+impl CommandEnum {
+    pub fn increase(&mut self) {
+        *self = ((*self as usize + 1) % Self::Max as usize)
+            .try_into()
+            .unwrap();
+    }
+    pub fn decrease(&mut self) {
+        *self = ((*self as usize + Self::Max as usize - 1) % Self::Max as usize)
+            .try_into()
+            .unwrap();
+    }
+}
+
 struct Context {
     monsters: [Character; MonsterEnum::Max as usize],
     characters: [Character; CharacterEnum::Max as usize],
@@ -132,16 +161,36 @@ fn battle(ctx: &mut Context, monster: MonsterEnum) {
     }
 }
 
-fn select_command(ctx: &Context) {
+fn select_command(ctx: &mut Context) {
     let command_names = ["싸운다", "주문", "도망친다"];
     loop {
         draw_battle_screen(ctx);
 
-        for command_name in command_names {
-            println!("{}", command_name);
+        for i in 0..CommandEnum::Max as usize {
+            if i == ctx.characters[CharacterEnum::Player as usize].command as usize {
+                print!(">");
+            } else {
+                print!(" ");
+            }
+            println!("{}", command_names[i]);
         }
         let mut line = String::new();
         let _ = std::io::stdin().read_line(&mut line).unwrap();
+        match line.trim() {
+            "w" => {
+                ctx.characters[CharacterEnum::Player as usize]
+                    .command
+                    .decrease();
+            }
+            "s" => {
+                ctx.characters[CharacterEnum::Player as usize]
+                    .command
+                    .increase();
+            }
+            _ => {
+                println!("what? {}", line);
+            }
+        }
     }
 }
 
