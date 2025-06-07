@@ -216,6 +216,12 @@ fn battle(ctx: &mut Context, monster: MonsterEnum) {
                     let _ = std::io::stdin().read_line(&mut line).unwrap();
                 }
                 CommandEnum::Spell => {
+                    if ctx.characters[i].mp < SPELL_COST {
+                        println!("MP가 부족하다.");
+                        let _ = std::io::stdin().read_line(&mut line).unwrap();
+                        return;
+                    }
+
                     println!("{}은(는) 주문을 외웠다.", ctx.characters[i].name);
 
                     ctx.characters[i].hp = ctx.characters[i].max_hp;
@@ -237,6 +243,8 @@ fn battle(ctx: &mut Context, monster: MonsterEnum) {
 
 fn select_command(ctx: &mut Context) {
     let command_names = ["싸운다", "주문", "도망친다"];
+    ctx.characters[CharacterEnum::Player as usize].command = CommandEnum::Fight;
+
     loop {
         draw_battle_screen(ctx);
 
