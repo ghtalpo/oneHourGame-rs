@@ -8,12 +8,14 @@ struct Character {
     aa: String, // ascii art
 }
 
+#[derive(Copy, Clone)]
 enum MonsterEnum {
     Player = 0,
     Slime = 1,
     Max,
 }
 
+#[derive(Copy, Clone)]
 enum CharacterEnum {
     Player = 0,
     Monster = 1,
@@ -77,6 +79,7 @@ fn draw_battle_screen(ctx: &context) {
 fn battle(ctx: &mut context, monster: MonsterEnum) {
     ctx.characters[CharacterEnum::Monster as usize] = ctx.monsters[monster as usize].clone();
     draw_battle_screen(ctx);
+    println!("{}이(가) 나타났다!", ctx.characters[monster as usize].name);
 }
 
 fn main() {
