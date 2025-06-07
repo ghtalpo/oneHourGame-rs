@@ -1,9 +1,10 @@
 #[derive(Clone)]
 struct Character {
-    hp: isize,
-    max_hp: isize,
-    mp: isize,
-    max_mp: isize,
+    hp: i64,
+    max_hp: i64,
+    mp: i64,
+    max_mp: i64,
+    attack: i64,
     name: String,
     aa: String, // ascii art
     command: CommandEnum,
@@ -17,6 +18,7 @@ impl Default for Character {
             max_hp: 0,
             mp: 0,
             max_mp: 0,
+            attack: 0,
             name: String::new(),
             aa: String::new(),
             command: CommandEnum::Fight,
@@ -49,6 +51,8 @@ enum CommandEnum {
 
 use std::convert::TryFrom;
 use std::convert::TryInto;
+
+use rand::random_range;
 
 impl TryFrom<usize> for CommandEnum {
     type Error = ();
@@ -90,6 +94,7 @@ impl Context {
                     max_hp: 15,
                     mp: 15,
                     max_mp: 15,
+                    attack: 3,
                     name: "용사".to_string(),
                     aa: String::new(),
                     command: CommandEnum::Fight,
@@ -100,6 +105,7 @@ impl Context {
                     max_hp: 3,
                     mp: 0,
                     max_mp: 0,
+                    attack: 2,
                     name: "슬라임".to_string(),
                     aa: "/·Д·\\\n".to_string(),
                     command: CommandEnum::Fight,
@@ -153,6 +159,8 @@ fn battle(ctx: &mut Context, monster: MonsterEnum) {
                     println!("{}의 공격", ctx.characters[i].name);
                     let mut line = String::new();
                     let _ = std::io::stdin().read_line(&mut line).unwrap();
+                    let attack = ctx.characters[CharacterEnum::Player as usize].attack;
+                    let damage = 1 + random_range(0..attack);
                     break;
                 }
                 CommandEnum::Spell => {
