@@ -164,6 +164,24 @@ fn battle(ctx: &mut Context, monster: MonsterEnum) {
                     let target = ctx.characters[CharacterEnum::Player as usize].target;
                     ctx.characters[target as usize].hp -= damage;
 
+                    if ctx.characters[target as usize].hp <= 0 {
+                        // ctx.characters[target as usize].hp = 0;
+                        match target {
+                            CharacterEnum::Player => {}
+                            CharacterEnum::Monster => {
+                                ctx.characters[target as usize].aa.clear();
+                                draw_battle_screen(ctx);
+                                println!(
+                                    "{}을(를) 쓰러뜨렸다!",
+                                    ctx.characters[target as usize].name
+                                );
+                            }
+                            _ => {}
+                        }
+                        let _ = std::io::stdin().read_line(&mut line).unwrap();
+                        return;
+                    }
+
                     if ctx.characters[target as usize].hp < 0 {
                         ctx.characters[target as usize].hp = 0;
                     }
