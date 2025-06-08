@@ -4,8 +4,8 @@ use std::time::SystemTime;
 use getch_rs::Getch;
 use getch_rs::Key;
 
-const FIELD_WIDTH: usize = 12;
-const FIELD_HEIGHT: usize = 12;
+const FIELD_WIDTH: usize = 160;
+const FIELD_HEIGHT: usize = 160;
 const FPS: usize = 10;
 const INTERVAL: f32 = 1000.0 / FPS as f32; // 밀리 초 
 
