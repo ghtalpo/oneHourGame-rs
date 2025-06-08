@@ -41,6 +41,13 @@ impl Context {
 
         let _ = self.g.getch();
     }
+    pub fn get_living_cells_count(&self, x_: i64, y_: i64) -> u64 {
+        let mut count = 0;
+        for y in y_ - 1..=y_ + 1 {
+            for x in x_ - 1..=x_ + 1 {}
+        }
+        return count;
+    }
 }
 
 fn main() {
