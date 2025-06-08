@@ -91,6 +91,20 @@ impl Context {
         }
         self.field.clone_from_slice(&next_field);
     }
+    pub fn pattern_transfer(
+        &mut self,
+        dest_x: usize,
+        dest_y: usize,
+        src_width: usize,
+        src_height: usize,
+        p_pattern: &Vec<bool>,
+    ) {
+        for y in 0..src_height {
+            for x in 0..src_width {
+                self.field[(dest_y + y) * FIELD_WIDTH + dest_x + x] = p_pattern[y * src_width + x];
+            }
+        }
+    }
 }
 
 fn main() {
