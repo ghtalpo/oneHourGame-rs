@@ -1,4 +1,5 @@
 use getch_rs::{Getch, Key};
+use rand::{rngs::ThreadRng, seq::IndexedRandom};
 
 const BOARD_WIDTH: usize = 8;
 const BOARD_HEIGHT: usize = 8;
@@ -79,6 +80,7 @@ struct Context {
     mode_names: [String; ModeEnum::Max as usize],
     mode: ModeEnum,
     is_player: [bool; TurnEnum::Max as usize],
+    rng: ThreadRng,
 }
 
 impl Context {
@@ -103,6 +105,7 @@ impl Context {
             mode_names: ["1P GAME".to_string(), "2P GAME".to_string()],
             mode: ModeEnum::Max,
             is_player: [false; TurnEnum::Max as usize],
+            rng: rand::rng(),
         }
     }
     pub fn init(&mut self) {
@@ -389,6 +392,10 @@ fn main() {
                     }
                 }
             }
+
+            place_position = *positions.choose(&mut ctx.rng).unwrap();
+
+            ctx.check_can_place(ctx.turn, place_position, true);
 
             let _ = ctx.g.getch();
         }
