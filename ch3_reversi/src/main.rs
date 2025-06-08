@@ -24,6 +24,13 @@ enum DirectionEnum {
     Max = 8,
 }
 
+#[derive(PartialEq)]
+enum ModeEnum {
+    OnePlayer = 0,
+    TwoPlayers = 1,
+    Max = 3,
+}
+
 #[derive(Clone, Copy, Default)]
 struct Vec2 {
     x: i8,
@@ -44,6 +51,7 @@ struct Context {
     turn: TurnEnum,
     turn_names: [String; TurnEnum::Max as usize],
     directions: [Vec2; DirectionEnum::Max as usize],
+    mode_names: [String; ModeEnum::Max as usize],
 }
 
 impl Context {
@@ -65,6 +73,7 @@ impl Context {
                 Vec2 { x: 1, y: 0 },
                 Vec2 { x: 1, y: -1 },
             ],
+            mode_names: ["1P GAME".to_string(), "2P GAME".to_string(), "".to_string()],
         }
     }
     pub fn init(&mut self) {
@@ -269,10 +278,26 @@ impl Context {
         }
         return count;
     }
+    fn select_mode(&mut self) {
+        loop {
+            clearscreen::clear().unwrap();
+
+            println!("모드를 선택하세요\n\n");
+
+            for i in 0..ModeEnum::Max as usize {
+                println!("{}\n", self.mode_names[i]);
+            }
+
+            match self.g.getch() {
+                _ => {}
+            }
+        }
+    }
 }
 
 fn main() {
     let mut ctx = Context::new();
+    ctx.select_mode();
     ctx.init();
     'start: loop {
         if !ctx.check_can_place_all(ctx.turn) {
