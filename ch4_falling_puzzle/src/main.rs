@@ -10,8 +10,9 @@ const BLOCK_HEIGHT_MAX: usize = 4;
 enum BlockEnum {
     None = 0,
     Hard = 1,
-    Fall = 2,
-    Max = 3,
+    Soft = 2,
+    Fall = 3,
+    Max = 4,
 }
 
 impl TryFrom<usize> for BlockEnum {
@@ -22,6 +23,7 @@ impl TryFrom<usize> for BlockEnum {
             x if x == BlockEnum::None as usize => Ok(BlockEnum::None),
             x if x == BlockEnum::Hard as usize => Ok(BlockEnum::Hard),
             x if x == BlockEnum::Fall as usize => Ok(BlockEnum::Fall),
+            x if x == BlockEnum::Soft as usize => Ok(BlockEnum::Soft),
             _ => Err(()),
         }
     }
@@ -141,6 +143,9 @@ impl Context {
                     BlockEnum::Hard => {
                         print!("+");
                     }
+                    BlockEnum::Soft => {
+                        print!("◆");
+                    }
                     BlockEnum::Fall => {
                         print!("◇");
                     }
@@ -179,6 +184,15 @@ impl Context {
 
         if self.block_intersect_field() {
             self.block = last_block.clone();
+
+            for y in 0..self.block.shape.size {
+                for x in 0..self.block.shape.size {
+                    if self.block.shape.pattern[y as usize * BLOCK_WIDTH_MAX + x as usize] > 0 {
+                        self.field[(self.block.y as usize + y) * FIELD_WIDTH
+                            + (self.block.x as usize + x)] = BlockEnum::Soft as u8;
+                    }
+                }
+            }
         }
 
         self.draw_screen();
@@ -235,5 +249,8 @@ fn main() {
         } else {
             ctx.draw_screen();
         }
+
+        // FIXME:
+        ctx.fall_block();
     }
 }
