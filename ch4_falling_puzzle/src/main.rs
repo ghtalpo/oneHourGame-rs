@@ -1,3 +1,5 @@
+use rand::{rngs::ThreadRng, seq::IndexedRandom};
+
 const FIELD_WIDTH: usize = 12;
 const FIELD_HEIGHT: usize = 18;
 
@@ -32,6 +34,7 @@ fn read_byte(data: &[u8], x: usize, y: usize) -> u8 {
     data[y * FIELD_WIDTH + x]
 }
 
+#[derive(Copy, Clone)]
 struct BlockShape {
     size: isize,
     pattern: [u8; BLOCK_HEIGHT * BLOCK_WIDTH],
@@ -67,6 +70,7 @@ struct Context {
     default_field: [u8; FIELD_HEIGHT * FIELD_WIDTH],
     block_shapes: [BlockShape; BlockShapeEnum::Max as usize],
     block: Block,
+    rng: ThreadRng,
 }
 
 impl Context {
@@ -96,10 +100,13 @@ impl Context {
             default_field,
             block_shapes,
             block: Block::new(),
+            rng: rand::rng(),
         }
     }
     pub fn init(&mut self) {
         self.field.clone_from_slice(&self.default_field);
+
+        self.init_block();
 
         self.draw_screen();
     }
@@ -121,6 +128,9 @@ impl Context {
             }
             println!();
         }
+    }
+    pub fn init_block(&mut self) {
+        self.block.shape = *self.block_shapes.choose(&mut self.rng).unwrap();
     }
 }
 
