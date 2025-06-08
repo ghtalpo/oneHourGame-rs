@@ -11,12 +11,31 @@ enum TurnEnum {
     Max = 3,
 }
 
+#[derive(PartialEq)]
+enum DirectionEnum {
+    Up = 0,
+    UpLeft = 1,
+    Left = 2,
+    DownLeft = 3,
+    Down = 4,
+    DownRight = 5,
+    Right = 6,
+    UpRight = 7,
+    Max = 8,
+}
+
 #[derive(Clone, Copy, Default)]
 struct Vec2 {
     x: i8,
     y: i8,
 }
 
+impl Vec2 {
+    pub fn add(&mut self, other: &Vec2) {
+        self.x += other.x;
+        self.y += other.y;
+    }
+}
 struct Context {
     board: Vec<TurnEnum>,
     disk_aa: [String; TurnEnum::Max as usize],
@@ -24,6 +43,7 @@ struct Context {
     g: Getch,
     turn: TurnEnum,
     turn_names: [String; TurnEnum::Max as usize],
+    directions: [Vec2; DirectionEnum::Max as usize],
 }
 
 impl Context {
@@ -35,6 +55,16 @@ impl Context {
             g: Getch::new(),
             turn: TurnEnum::Black,
             turn_names: ["검은 돌".to_string(), "흰 돌".to_string(), "·".to_string()],
+            directions: [
+                Vec2 { x: 0, y: -1 },
+                Vec2 { x: -1, y: -1 },
+                Vec2 { x: -1, y: 0 },
+                Vec2 { x: -1, y: 1 },
+                Vec2 { x: 0, y: 1 },
+                Vec2 { x: 1, y: 1 },
+                Vec2 { x: 1, y: 0 },
+                Vec2 { x: 1, y: 1 },
+            ],
         }
     }
     pub fn init(&mut self) {
@@ -105,9 +135,49 @@ impl Context {
         }
     }
     pub fn check_can_place(&self, color: TurnEnum, position: Vec2) -> bool {
-        let can_place = false;
+        let mut can_place = false;
         if self.board[position.y as usize * BOARD_WIDTH + position.x as usize] != TurnEnum::None {
             return false;
+        }
+        for i in 0..DirectionEnum::Max as usize {
+            let mut current_position = position;
+
+            current_position.add(&self.directions[i]);
+
+            let opponent = if color == TurnEnum::Black {
+                TurnEnum::White
+            } else {
+                TurnEnum::Black
+            };
+
+            if self.board[current_position.y as usize * BOARD_WIDTH + current_position.x as usize]
+                != opponent
+            {
+                continue;
+            }
+            loop {
+                current_position.add(&self.directions[i]);
+
+                if current_position.x < 0
+                    || current_position.x >= BOARD_WIDTH as i8
+                    || current_position.y < 0
+                    || current_position.y >= BOARD_HEIGHT as i8
+                {
+                    break;
+                }
+                if self.board
+                    [current_position.y as usize * BOARD_WIDTH + current_position.x as usize]
+                    == TurnEnum::None
+                {
+                    break;
+                }
+                if self.board
+                    [current_position.y as usize * BOARD_WIDTH + current_position.x as usize]
+                    == color
+                {
+                    can_place = true;
+                }
+            }
         }
         return can_place;
     }
