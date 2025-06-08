@@ -195,6 +195,10 @@ impl Context {
             }
 
             self.init_block();
+
+            if self.block_intersect_field() {
+                self.init();
+            }
         }
 
         self.draw_screen();
