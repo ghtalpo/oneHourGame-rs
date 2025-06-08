@@ -225,7 +225,25 @@ impl Context {
         }
         return false;
     }
-    fn erase_line(&mut self) {}
+    fn erase_line(&mut self) {
+        for y in 0..FIELD_HEIGHT {
+            let mut completed = true;
+            for x in 0..FIELD_WIDTH {
+                if self.field[y * FIELD_WIDTH + x] == BlockEnum::None as u8 {
+                    completed = false;
+                    break;
+                }
+            }
+
+            if completed {
+                for x in 0..FIELD_WIDTH {
+                    if self.field[y * FIELD_WIDTH + x] == BlockEnum::Soft as u8 {
+                        self.field[y * FIELD_WIDTH + x] = BlockEnum::None as u8;
+                    }
+                }
+            }
+        }
+    }
 }
 
 fn main() {
