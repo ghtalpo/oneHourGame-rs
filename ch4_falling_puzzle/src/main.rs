@@ -1,5 +1,5 @@
 use getch_rs::{Getch, Key};
-use rand::{rngs::ThreadRng, seq::IndexedRandom};
+use rand::{Rng, rngs::ThreadRng, seq::IndexedRandom};
 
 const FIELD_WIDTH: usize = 12;
 const FIELD_HEIGHT: usize = 18;
@@ -39,7 +39,7 @@ fn read_byte(data: &[u8], x: usize, y: usize) -> u8 {
 
 #[derive(Copy, Clone)]
 struct BlockShape {
-    size: isize,
+    size: usize,
     pattern: [u8; BLOCK_HEIGHT_MAX * BLOCK_WIDTH_MAX],
 }
 
@@ -52,6 +52,7 @@ impl BlockShape {
     }
 }
 
+#[derive(Copy, Clone)]
 struct Block {
     x: isize,
     y: isize,
@@ -151,8 +152,25 @@ impl Context {
     }
     pub fn init_block(&mut self) {
         self.block.shape = *self.block_shapes.choose(&mut self.rng).unwrap();
-        self.block.x = FIELD_WIDTH as isize / 2 - self.block.shape.size / 2;
+        self.block.x = (FIELD_WIDTH / 2 - self.block.shape.size / 2) as isize;
         self.block.y = 0;
+
+        let rotate_count = self.rng.random::<u8>() % 4;
+        for _ in 0..rotate_count {
+            self.rotate_block();
+        }
+    }
+    pub fn rotate_block(&mut self) {
+        let mut rotated_block = self.block.clone();
+
+        for y in 0..self.block.shape.size {
+            for x in 0..self.block.shape.size {
+                rotated_block.shape.pattern
+                    [(self.block.shape.size - 1 - x) * BLOCK_WIDTH_MAX + y] =
+                    self.block.shape.pattern[y * BLOCK_WIDTH_MAX + x];
+            }
+        }
+        self.block = rotated_block.clone();
     }
 }
 
@@ -175,7 +193,9 @@ fn main() {
             Ok(Key::Esc) => {
                 std::process::exit(0);
             }
-            _ => {}
+            _ => {
+                ctx.rotate_block();
+            }
         }
         ctx.draw_screen();
     }
