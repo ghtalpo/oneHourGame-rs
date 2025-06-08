@@ -372,7 +372,13 @@ fn main() {
         }
         let mut place_position = Vec2::default();
 
-        place_position = ctx.input_position();
+        if ctx.is_player[ctx.turn as usize] {
+            place_position = ctx.input_position();
+        } else {
+            ctx.draw_screen();
+
+            let _ = ctx.g.getch();
+        }
 
         ctx.board[place_position.y as usize * BOARD_WIDTH + place_position.x as usize] = ctx.turn;
         ctx.turn = if ctx.turn == TurnEnum::Black {
