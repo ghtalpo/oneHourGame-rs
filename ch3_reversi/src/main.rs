@@ -89,14 +89,15 @@ impl Context {
                 Ok(Key::Esc) => {
                     std::process::exit(0);
                 }
-                _ => {}
+                _ => {
+                    return self.cursor_position;
+                }
             }
             self.cursor_position.x =
                 (BOARD_WIDTH as i8 + self.cursor_position.x) % (BOARD_WIDTH as i8);
             self.cursor_position.y =
                 (BOARD_HEIGHT as i8 + self.cursor_position.y) % (BOARD_HEIGHT as i8);
         }
-        return Vec2::default();
     }
 }
 
@@ -107,5 +108,7 @@ fn main() {
         let mut place_position = Vec2::default();
 
         place_position = ctx.input_position();
+
+        ctx.board[place_position.y as usize * BOARD_WIDTH + place_position.x as usize] = ctx.turn;
     }
 }
