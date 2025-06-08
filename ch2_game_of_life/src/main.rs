@@ -53,6 +53,12 @@ impl Context {
                 //     continue;
                 // }
                 let rooped_x = (FieldWidth as i64 + x) % FieldWidth as i64;
+                if rooped_x == x_ && rooped_y == y_ {
+                    continue;
+                }
+                if self.field[rooped_y as usize * FieldWidth + rooped_x as usize] {
+                    count += 1;
+                }
             }
         }
         return count;
