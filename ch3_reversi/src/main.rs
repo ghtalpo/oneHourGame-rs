@@ -29,7 +29,8 @@ enum DirectionEnum {
 enum ModeEnum {
     OnePlayer = 0,
     TwoPlayers = 1,
-    Max = 2,
+    Watch = 2,
+    Max = 3,
 }
 impl TryFrom<usize> for ModeEnum {
     type Error = ();
@@ -38,6 +39,7 @@ impl TryFrom<usize> for ModeEnum {
         match v {
             x if x == ModeEnum::OnePlayer as usize => Ok(ModeEnum::OnePlayer),
             x if x == ModeEnum::TwoPlayers as usize => Ok(ModeEnum::TwoPlayers),
+            x if x == ModeEnum::Watch as usize => Ok(ModeEnum::Watch),
             _ => Err(()),
         }
     }
@@ -102,7 +104,11 @@ impl Context {
                 Vec2 { x: 1, y: 0 },
                 Vec2 { x: 1, y: -1 },
             ],
-            mode_names: ["1P GAME".to_string(), "2P GAME".to_string()],
+            mode_names: [
+                "1P GAME".to_string(),
+                "2P GAME".to_string(),
+                "WATCH".to_string(),
+            ],
             mode: ModeEnum::Max,
             is_player: [false; TurnEnum::Max as usize],
             rng: rand::rng(),
@@ -334,6 +340,9 @@ impl Context {
                 Ok(Key::Char('s')) => {
                     self.mode.increase();
                 }
+                Ok(Key::Esc) => {
+                    std::process::exit(0);
+                }
                 _ => {
                     match self.mode {
                         ModeEnum::OnePlayer => {
@@ -343,6 +352,10 @@ impl Context {
                         ModeEnum::TwoPlayers => {
                             self.is_player[TurnEnum::Black as usize] = true;
                             self.is_player[TurnEnum::White as usize] = true;
+                        }
+                        ModeEnum::Watch => {
+                            self.is_player[TurnEnum::Black as usize] = false;
+                            self.is_player[TurnEnum::White as usize] = false;
                         }
                         _ => {}
                     }
@@ -371,6 +384,7 @@ fn main() {
 
                 let _ = ctx.g.getch();
 
+                ctx.select_mode();
                 ctx.init();
                 continue 'start;
             } else {
