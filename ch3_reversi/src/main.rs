@@ -105,7 +105,11 @@ impl Context {
         }
     }
     pub fn check_can_place(&self, color: TurnEnum, position: Vec2) -> bool {
-        return false;
+        let can_place = false;
+        if self.board[position.y as usize * BOARD_WIDTH + position.x as usize] != TurnEnum::None {
+            return false;
+        }
+        return can_place;
     }
 }
 
