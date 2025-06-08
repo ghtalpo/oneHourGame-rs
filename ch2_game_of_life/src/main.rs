@@ -17,14 +17,14 @@ struct Context {
 
 impl Context {
     pub fn new() -> Self {
-        let mut field = vec![false; FIELD_HEIGHT * FIELD_WIDTH];
-        field[0 * FIELD_WIDTH + 1] = true;
-        field[1 * FIELD_WIDTH + 2] = true;
-        field[2 * FIELD_WIDTH + 0] = true;
-        field[2 * FIELD_WIDTH + 1] = true;
-        field[2 * FIELD_WIDTH + 2] = true;
+        // let mut field = vec![false; FIELD_HEIGHT * FIELD_WIDTH];
+        // field[0 * FIELD_WIDTH + 1] = true;
+        // field[1 * FIELD_WIDTH + 2] = true;
+        // field[2 * FIELD_WIDTH + 0] = true;
+        // field[2 * FIELD_WIDTH + 1] = true;
+        // field[2 * FIELD_WIDTH + 2] = true;
         Self {
-            field,
+            field: vec![false; FIELD_HEIGHT * FIELD_WIDTH],
             g: Getch::new(),
             last_clock: SystemTime::now(),
         }
@@ -109,6 +109,27 @@ impl Context {
 
 fn main() {
     let mut ctx = Context::new();
+
+    const PATTERN_WIDTH: usize = 10;
+    const PATTERN_HEIGHT: usize = 8;
+    let mut pattern = vec![
+        false, false, false, false, false, false, false, false, false, false, false, false, false,
+        false, false, false, false, true, false, false, false, false, false, false, false, true,
+        false, true, true, false, false, false, false, false, false, true, false, true, false,
+        false, false, false, false, false, false, true, false, false, false, false, false, false,
+        false, true, false, false, false, false, false, false, false, true, false, true, false,
+        false, false, false, false, false, false, false, false, false, false, false, false, false,
+        false, false,
+    ];
+
+    ctx.pattern_transfer(
+        FIELD_WIDTH / 2 - PATTERN_WIDTH / 2,
+        FIELD_HEIGHT / 2 - PATTERN_HEIGHT / 2,
+        PATTERN_WIDTH,
+        PATTERN_HEIGHT,
+        &pattern,
+    );
+
     loop {
         match ctx.last_clock.elapsed() {
             Ok(elapsed) => {
