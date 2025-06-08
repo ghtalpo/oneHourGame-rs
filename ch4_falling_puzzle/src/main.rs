@@ -7,6 +7,22 @@ enum BlockEnum {
     Max = 2,
 }
 
+impl TryFrom<usize> for BlockEnum {
+    type Error = ();
+
+    fn try_from(v: usize) -> Result<Self, Self::Error> {
+        match v {
+            x if x == BlockEnum::None as usize => Ok(BlockEnum::None),
+            x if x == BlockEnum::Hard as usize => Ok(BlockEnum::Hard),
+            _ => Err(()),
+        }
+    }
+}
+
+fn read_byte(data: &[u8], x: usize, y: usize) -> u8 {
+    data[y * FIELD_WIDTH + x]
+}
+
 struct Context {
     field: [u8; FIELD_HEIGHT * FIELD_WIDTH],
     default_field: [u8; FIELD_HEIGHT * FIELD_WIDTH],
@@ -30,9 +46,29 @@ impl Context {
         }
     }
     pub fn init(&mut self) {
+        self.field.clone_from_slice(&self.default_field);
+
         self.draw_screen();
     }
-    pub fn draw_screen(&self) {}
+    pub fn draw_screen(&self) {
+        let mut screen = [0; FIELD_HEIGHT * FIELD_WIDTH];
+        screen.clone_from(&self.field);
+
+        for y in 0..FIELD_HEIGHT {
+            for x in 0..FIELD_WIDTH {
+                match BlockEnum::try_from(read_byte(&screen, x, y) as usize).unwrap() {
+                    BlockEnum::None => {
+                        print!(" ");
+                    }
+                    BlockEnum::Hard => {
+                        print!("+");
+                    }
+                    _ => {}
+                }
+            }
+            println!();
+        }
+    }
 }
 
 fn main() {
