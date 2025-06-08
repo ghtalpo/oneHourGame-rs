@@ -134,7 +134,7 @@ impl Context {
                 (BOARD_HEIGHT as i8 + self.cursor_position.y) % (BOARD_HEIGHT as i8);
         }
     }
-    pub fn check_can_place(&self, color: TurnEnum, position: Vec2, turn_over: bool) -> bool {
+    pub fn check_can_place(&mut self, color: TurnEnum, position: Vec2, turn_over: bool) -> bool {
         let mut can_place = false;
         if self.board[position.y as usize * BOARD_WIDTH + position.x as usize] != TurnEnum::None {
             return false;
@@ -176,6 +176,23 @@ impl Context {
                     == color
                 {
                     can_place = true;
+                    if turn_over {
+                        let mut reverse_position = position;
+                        reverse_position.add(&self.directions[i]);
+                        loop {
+                            self.board[reverse_position.y as usize * BOARD_WIDTH
+                                + reverse_position.x as usize] = color;
+
+                            reverse_position.add(&self.directions[i]);
+
+                            if self.board[reverse_position.y as usize * BOARD_WIDTH
+                                + reverse_position.x as usize]
+                                != color
+                            {
+                                break;
+                            }
+                        }
+                    }
                 }
             }
         }
