@@ -1,14 +1,18 @@
 use std::process::exit;
+use std::time::SystemTime;
 
 use getch_rs::Getch;
 use getch_rs::Key;
 
 const FIELD_WIDTH: usize = 12;
 const FIELD_HEIGHT: usize = 12;
+const FPS: usize = 10;
+const INTERVAL: f32 = 1000.0 / FPS as f32; // 밀리 초 
 
 struct Context {
     field: Vec<bool>, //bool[FieldHeight][FieldWidth];
     g: Getch,
+    last_clock: SystemTime,
 }
 
 impl Context {
@@ -22,6 +26,7 @@ impl Context {
         Self {
             field,
             g: Getch::new(),
+            last_clock: SystemTime::now(),
         }
     }
     pub fn draw_field(&self) {
@@ -41,12 +46,12 @@ impl Context {
             println!();
         }
 
-        match self.g.getch() {
-            Ok(Key::Esc) => {
-                exit(0);
-            }
-            _ => {}
-        }
+        // match self.g.getch() {
+        //     Ok(Key::Esc) => {
+        //         exit(0);
+        //     }
+        //     _ => {}
+        // }
     }
     pub fn get_living_cells_count(&self, x_: i64, y_: i64) -> u64 {
         let mut count = 0;
@@ -91,7 +96,22 @@ impl Context {
 fn main() {
     let mut ctx = Context::new();
     loop {
+        match ctx.last_clock.elapsed() {
+            Ok(elapsed) => {
+                if (elapsed.as_millis() as f32) < INTERVAL {
+                    continue;
+                }
+            }
+            Err(e) => {
+                // an error occurred!
+                println!("Error: {e:?}");
+                exit(0);
+            }
+        }
+        // if new_clock
         ctx.draw_field();
         ctx.step_simulation();
+
+        ctx.last_clock = SystemTime::now();
     }
 }
