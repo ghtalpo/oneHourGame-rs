@@ -15,6 +15,16 @@ enum TurnEnum {
     Max = 3,
 }
 
+impl TurnEnum {
+    pub fn get_opponent(&self) -> Self {
+        if *self == TurnEnum::Black {
+            TurnEnum::White
+        } else {
+            TurnEnum::Black
+        }
+    }
+}
+
 // [3-2]방향의 종류를 정의한다
 #[derive(PartialEq)]
 enum DirectionEnum {
@@ -77,23 +87,19 @@ impl Vec2 {
         self.x += other.x;
         self.y += other.y;
     }
+    pub fn is_valid(&self) -> bool {
+        !(self.x < 0 || self.x >= BOARD_WIDTH as i8 || self.y < 0 || self.y >= BOARD_HEIGHT as i8)
+    }
 }
 
-struct Context {
-    board: Vec<TurnEnum>,
+struct FixedResources {
     disk_aa: [String; TurnEnum::Max as usize],
-    cursor_position: Vec2,
-    g: Getch,
-    turn: TurnEnum,
     turn_names: [String; TurnEnum::Max as usize],
-    directions: [Vec2; DirectionEnum::Max as usize],
     mode_names: [String; ModeEnum::Max as usize],
-    mode: ModeEnum,
-    is_player: [bool; TurnEnum::Max as usize],
-    rng: ThreadRng,
+    directions: [Vec2; DirectionEnum::Max as usize],
 }
 
-impl Context {
+impl FixedResources {
     pub fn new() -> Self {
         Self {
             // [5-1]돌의 아스키아트를 선언한다
@@ -117,6 +123,25 @@ impl Context {
                 Vec2 { x: 1, y: 0 },
                 Vec2 { x: 1, y: -1 },
             ],
+        }
+    }
+}
+
+struct Context {
+    resource: FixedResources,
+    board: Vec<TurnEnum>,
+    cursor_position: Vec2,
+    turn: TurnEnum,
+    mode: ModeEnum,
+    is_player: [bool; TurnEnum::Max as usize],
+    g: Getch,
+    rng: ThreadRng,
+}
+
+impl Context {
+    pub fn new() -> Self {
+        Self {
+            resource: FixedResources::new(),
             // [5-5]모눈판 각 칸의 상태를 선언한다
             board: vec![TurnEnum::None; BOARD_HEIGHT * BOARD_WIDTH],
             // [5-6]커서의 좌표를 선언한다
@@ -137,16 +162,17 @@ impl Context {
         let mut can_place = false; // [6-2-1]돌을 놓을 수 있는지 여부의 플래그를 선언한다
 
         // [6-2-2]대상 좌표에 돌이 놓여 있지 않은지 여부를 판정한다
-        if self.board[position.y as usize * BOARD_WIDTH + position.x as usize] != TurnEnum::None {
+        if self.get_board(position.x, position.y) != TurnEnum::None {
             return false; // [6-2-3]돌이 놓여 있으면 놓을 수 없다는 결과를 반환한다
         }
 
         // [6-2-4]상대의 돌 색을 선언한다
-        let opponent = if color == TurnEnum::Black {
-            TurnEnum::White
-        } else {
-            TurnEnum::Black
-        };
+        let opponent = color.get_opponent();
+        // if color == TurnEnum::Black {
+        //     TurnEnum::White
+        // } else {
+        //     TurnEnum::Black
+        // };
 
         // [6-2-5]모든 방향을 반복한다
         for i in 0..DirectionEnum::Max as usize {
@@ -154,22 +180,16 @@ impl Context {
             let mut current_position = position;
 
             // [6-2-7]옆의 칸으로 이동한다
-            current_position.add(&self.directions[i]);
+            current_position.add(&self.get_direction(i));
 
             // [6-2-7.1]체크하는 칸이 모눈판의 범위 내인지 판정한다
-            if current_position.x < 0
-                || current_position.x >= BOARD_WIDTH as i8
-                || current_position.y < 0
-                || current_position.y >= BOARD_HEIGHT as i8
-            {
+            if !current_position.is_valid() {
                 // [6-2-7.2]대상 방향의 체크를 스킵한다
                 continue;
             }
 
             // [6-2-8]상대의 돌이 아닌지 판정한다
-            if self.board[current_position.y as usize * BOARD_WIDTH + current_position.x as usize]
-                != opponent
-            {
+            if self.get_board(current_position.x, current_position.y) != opponent {
                 // [6-2-9]상대의 돌이 아니면 그 방향의 체크를 중지한다
                 continue;
             }
@@ -177,31 +197,21 @@ impl Context {
             // [6-2-10]무한 루프한다
             loop {
                 // [6-2-11]옆 칸으로 이동한다
-                current_position.add(&self.directions[i]);
+                current_position.add(&self.get_direction(i));
 
                 // [6-2-12]체크하는 칸이 모눈판의 범위 내인지 판정한다
-                if current_position.x < 0
-                    || current_position.x >= BOARD_WIDTH as i8
-                    || current_position.y < 0
-                    || current_position.y >= BOARD_HEIGHT as i8
-                {
+                if !current_position.is_valid() {
                     // [6-2-13]모눈판 바깥쪽으로 나가면 현재 방향의 체크를 빠져나간다
                     break;
                 }
 
                 // [6-2-14]체크하는 칸에 돌이 있는지 여부를 판정한다
-                if self.board
-                    [current_position.y as usize * BOARD_WIDTH + current_position.x as usize]
-                    == TurnEnum::None
-                {
+                if self.get_board(current_position.x, current_position.y) == TurnEnum::None {
                     break; // [6-2-15]돌이 없으면 현재 방향의 체크를 빠져나간다
                 }
 
                 // [6-2-16]체크하는 칸에 자신의 돌이 있으면
-                if self.board
-                    [current_position.y as usize * BOARD_WIDTH + current_position.x as usize]
-                    == color
-                {
+                if self.get_board(current_position.x, current_position.y) == color {
                     // [6-2-17]돌을 놓을 수 있는 것이 확정된다
                     can_place = true;
 
@@ -211,30 +221,22 @@ impl Context {
                         let mut reverse_position = position;
 
                         // [6-2-20]옆 칸으로 이동한다
-                        reverse_position.add(&self.directions[i]);
+                        reverse_position.add(&self.get_direction(i));
 
                         // [6-2-21]현재 턴의 돌을 찾을 때까지 반복한다
                         loop {
                             // [6-2-22]상대의 돌을 뒤집는다
-                            self.board[reverse_position.y as usize * BOARD_WIDTH
-                                + reverse_position.x as usize] = color;
+                            self.set_board(reverse_position.x, reverse_position.y, color);
 
                             // [6-2-23]옆 칸으로 이동한다
-                            reverse_position.add(&self.directions[i]);
+                            reverse_position.add(&self.get_direction(i));
 
                             // 크래시 막기
-                            if reverse_position.x < 0
-                                || reverse_position.x >= BOARD_WIDTH as i8
-                                || reverse_position.y < 0
-                                || reverse_position.y >= BOARD_HEIGHT as i8
-                            {
+                            if !reverse_position.is_valid() {
                                 break;
                             }
 
-                            if self.board[reverse_position.y as usize * BOARD_WIDTH
-                                + reverse_position.x as usize]
-                                == color
-                            {
+                            if self.get_board(reverse_position.x, reverse_position.y) == color {
                                 break;
                             }
                         }
@@ -242,7 +244,7 @@ impl Context {
                 }
             }
         }
-        can_place// [6-2-24]돌을 놓을 수 있는지 여부를 반환한다
+        can_place // [6-2-24]돌을 놓을 수 있는지 여부를 반환한다
     }
 
     // [6-3]모눈판 위에 돌을 놓을 수 있는 칸이 있는지 여부를 판정하는 함수를 선언한다
@@ -261,7 +263,7 @@ impl Context {
                 }
             }
         }
-        false// [6-3-6]돌을 놓을 수 있는 칸이 없다는 결과를 반환한다
+        false // [6-3-6]돌을 놓을 수 있는 칸이 없다는 결과를 반환한다
     }
 
     // [6-4]임의의 돌의 개수를 세는 함수를 선언한다
@@ -271,12 +273,12 @@ impl Context {
         for y in 0..BOARD_HEIGHT {
             for x in 0..BOARD_WIDTH {
                 // [6-4-4]대상 칸에 대상의 돌이 있는지 여부를 판정한다
-                if self.board[y * BOARD_WIDTH + x] == color {
+                if self.get_board(x as i8, y as i8) == color {
                     count += 1; // [6-4-5]돌의 개수를 더한다
                 }
             }
         }
-        count// [6-4-6]센 돌의 개수를 반환한다
+        count // [6-4-6]센 돌의 개수를 반환한다
     }
 
     // [6-5]화면을 그리는 함수를 선언한다
@@ -285,11 +287,14 @@ impl Context {
 
         for y in 0..BOARD_HEIGHT {
             for x in 0..BOARD_WIDTH {
-                print!("{}", self.disk_aa[self.board[y * BOARD_WIDTH + x] as usize]);
+                print!(
+                    "{}",
+                    self.get_disk_aa(self.get_board(x as i8, y as i8) as usize)
+                );
             }
 
             // [6-5-5]플레이어의 담당인지 여부를 판정한다
-            if self.is_player[self.turn as usize] {
+            if self.is_human_player(self.turn) {
                 // [6-5-6]대상 행이 커서와 같은 행인지 여부를 판정한다
                 if y == self.cursor_position.y as usize {
                     print!("←");
@@ -300,7 +305,7 @@ impl Context {
         }
 
         // [6-5-9]플레이어의 담당인지 여부를 판정한다
-        if self.is_player[self.turn as usize] {
+        if self.is_human_player(self.turn) {
             for x in 0..BOARD_WIDTH {
                 if x == self.cursor_position.x as usize {
                     print!("↑");
@@ -315,7 +320,7 @@ impl Context {
         // [6-5-15]승부가 났는지 여부를 판정한다
         if self.turn != TurnEnum::None {
             // [6-5-16]턴을 표시한다
-            println!("{}의 턴입니다.", self.turn_names[self.turn as usize]);
+            println!("{}의 턴입니다.", self.get_turn_names(self.turn));
         } else {
             // [6-5-17]승부가 났다면
             let black_count = self.get_disk_count(TurnEnum::Black);
@@ -334,9 +339,9 @@ impl Context {
             // [6-5-28]양측 돌의 개수를 표시한다
             println!(
                 "{}{} - {}{}",
-                self.turn_names[TurnEnum::Black as usize],
+                self.get_turn_names(TurnEnum::Black),
                 black_count,
-                self.turn_names[TurnEnum::White as usize],
+                self.get_turn_names(TurnEnum::White),
                 white_count,
             );
 
@@ -346,7 +351,7 @@ impl Context {
             } else {
                 // [6-5-31]승부가 났다면
                 // [6-5-32]승자를 표시한다
-                println!("{}의 승리", self.turn_names[winner as usize]);
+                println!("{}의 승리", self.get_turn_names(winner));
             }
         }
     }
@@ -364,7 +369,7 @@ impl Context {
                 // [6-6-7]현재의 모드에는 커서를, 그 밖에는 공백을 그린다
                 print!("{}", if i == self.mode as usize { ">" } else { " " });
 
-                println!("{}\n", self.mode_names[i]);
+                println!("{}\n", self.get_mode_names(i));
             }
 
             match self.g.getch() {
@@ -382,18 +387,18 @@ impl Context {
                     match self.mode {
                         ModeEnum::OnePlayer => {
                             // [6-6-17]AI와 대전하는 모드라면
-                            self.is_player[TurnEnum::Black as usize] = true;
-                            self.is_player[TurnEnum::White as usize] = false;
+                            self.set_human_player(TurnEnum::Black, true);
+                            self.set_human_player(TurnEnum::White, false);
                         }
                         ModeEnum::TwoPlayers => {
                             // [6-6-20]사람 간의 대전 모드라면
-                            self.is_player[TurnEnum::Black as usize] = true;
-                            self.is_player[TurnEnum::White as usize] = true;
+                            self.set_human_player(TurnEnum::Black, true);
+                            self.set_human_player(TurnEnum::White, true);
                         }
                         ModeEnum::Watch => {
                             // [6-6-22]AI간 대결의 관전 모드라면
-                            self.is_player[TurnEnum::Black as usize] = false;
-                            self.is_player[TurnEnum::White as usize] = false;
+                            self.set_human_player(TurnEnum::Black, false);
+                            self.set_human_player(TurnEnum::White, false);
                         }
                         _ => {}
                     }
@@ -409,12 +414,12 @@ impl Context {
         self.board = vec![TurnEnum::None; BOARD_HEIGHT * BOARD_WIDTH];
 
         // [6-7-4]모눈판 중앙의 오른쪽 위와 왼쪽 아래에 검은 돌을 놓는다
-        self.board[4 * BOARD_WIDTH + 3] = TurnEnum::Black;
-        self.board[3 * BOARD_WIDTH + 4] = TurnEnum::Black;
+        self.set_board(3, 4, TurnEnum::Black);
+        self.set_board(4, 3, TurnEnum::Black);
 
         // [6-7-5]모눈판 중앙의 왼쪽 위와 오른쪽 아래에 흰 돌을 놓는다
-        self.board[3 * BOARD_WIDTH + 3] = TurnEnum::White;
-        self.board[4 * BOARD_WIDTH + 4] = TurnEnum::White;
+        self.set_board(3, 3, TurnEnum::White);
+        self.set_board(4, 4, TurnEnum::White);
 
         self.turn = TurnEnum::Black; // [6-7-6]검은 돌의 턴으로 초기화한다
 
@@ -470,6 +475,42 @@ impl Context {
                 (BOARD_HEIGHT as i8 + self.cursor_position.y) % (BOARD_HEIGHT as i8);
         }
     }
+
+    fn get_board(&self, x: i8, y: i8) -> TurnEnum {
+        self.board[y as usize * BOARD_WIDTH + x as usize]
+    }
+
+    fn set_board(&mut self, x: i8, y: i8, color: TurnEnum) {
+        self.board[y as usize * BOARD_WIDTH + x as usize] = color;
+    }
+
+    fn get_disk_aa(&self, turn: usize) -> &String {
+        &self.resource.disk_aa[turn]
+    }
+
+    fn get_turn_names(&self, turn: TurnEnum) -> &String {
+        &self.resource.turn_names[turn as usize]
+    }
+
+    fn get_mode_names(&self, mode: usize) -> &String {
+        &self.resource.mode_names[mode]
+    }
+
+    fn get_direction(&self, dir: usize) -> Vec2 {
+        self.resource.directions[dir]
+    }
+
+    fn is_human_player(&self, turn: TurnEnum) -> bool {
+        self.is_player[turn as usize]
+    }
+
+    fn set_human_player(&mut self, turn: TurnEnum, is_human: bool) {
+        self.is_player[turn as usize] = is_human;
+    }
+
+    fn flip_turn(&mut self) {
+        self.turn = self.turn.get_opponent();
+    }
 }
 
 fn main() {
@@ -482,11 +523,7 @@ fn main() {
             // [6-9-7]놓을 수 있는 칸이 없는지 여부를 판정한다
             if !ctx.check_can_place_all(ctx.turn) {
                 // [6-9-8]턴을 바꾼다
-                ctx.turn = if ctx.turn == TurnEnum::Black {
-                    TurnEnum::White
-                } else {
-                    TurnEnum::Black
-                };
+                ctx.flip_turn();
 
                 // [6-9-9]놓을 수 있는 칸이 없는지 여부를 판정한다
                 if !ctx.check_can_place_all(ctx.turn) {
@@ -509,7 +546,7 @@ fn main() {
             let place_position = 
 
             // [6-9-17]현재 턴의 담당이 플레이어인지 여부를 판정한다
-            if ctx.is_player[ctx.turn as usize] {
+            if ctx.is_human_player(ctx.turn) {
                 // [6-9-18]돌을 놓는 칸을 선택하는 함수를 호출한다
                 ctx.input_position()
             } else {
@@ -545,15 +582,10 @@ fn main() {
             ctx.check_can_place(ctx.turn, place_position, true);
 
             // [6-9-30]현재 턴의 돌을 놓는다
-            ctx.board[place_position.y as usize * BOARD_WIDTH + place_position.x as usize] =
-                ctx.turn;
+            ctx.set_board(place_position.x, place_position.y, ctx.turn);
 
             // [6-9-31]턴을 바꾼다
-            ctx.turn = if ctx.turn == TurnEnum::Black {
-                TurnEnum::White
-            } else {
-                TurnEnum::Black
-            };
+            ctx.flip_turn();
         }
     }
 }
