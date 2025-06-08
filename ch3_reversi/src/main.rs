@@ -38,6 +38,9 @@ impl Context {
         self.board[3 * BOARD_WIDTH + 4] = TurnEnum::Black;
         self.board[3 * BOARD_WIDTH + 3] = TurnEnum::White;
         self.board[4 * BOARD_WIDTH + 4] = TurnEnum::White;
+
+        self.cursor_position = Vec2 { x: 3, y: 3 };
+
         self.draw_screen();
     }
     pub fn draw_screen(&self) {
