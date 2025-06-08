@@ -143,6 +143,13 @@ impl Context {
             let mut current_position = position;
 
             current_position.add(&self.directions[i]);
+            if current_position.x < 0
+                || current_position.x >= BOARD_WIDTH as i8
+                || current_position.y < 0
+                || current_position.y >= BOARD_HEIGHT as i8
+            {
+                continue;
+            }
 
             let opponent = if color == TurnEnum::Black {
                 TurnEnum::White
@@ -184,10 +191,17 @@ impl Context {
                                 + reverse_position.x as usize] = color;
 
                             reverse_position.add(&self.directions[i]);
+                            if reverse_position.x < 0
+                                || reverse_position.x >= BOARD_WIDTH as i8
+                                || reverse_position.y < 0
+                                || reverse_position.y >= BOARD_HEIGHT as i8
+                            {
+                                break;
+                            }
 
                             if self.board[reverse_position.y as usize * BOARD_WIDTH
                                 + reverse_position.x as usize]
-                                != color
+                                == color
                             {
                                 break;
                             }
@@ -198,12 +212,35 @@ impl Context {
         }
         return can_place;
     }
+    fn check_can_place_all(&mut self, color: TurnEnum) -> bool {
+        for y in 0..BOARD_HEIGHT {
+            for x in 0..BOARD_WIDTH {
+                let position = Vec2 {
+                    x: x as i8,
+                    y: y as i8,
+                };
+
+                if self.check_can_place(color, position, false) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }
 
 fn main() {
     let mut ctx = Context::new();
     ctx.init();
     loop {
+        if !ctx.check_can_place_all(ctx.turn) {
+            ctx.turn = if ctx.turn == TurnEnum::Black {
+                TurnEnum::White
+            } else {
+                TurnEnum::Black
+            };
+            continue;
+        }
         let mut place_position = Vec2::default();
 
         place_position = ctx.input_position();
