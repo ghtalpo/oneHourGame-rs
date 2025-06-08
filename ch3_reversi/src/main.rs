@@ -24,11 +24,35 @@ enum DirectionEnum {
     Max = 8,
 }
 
-#[derive(PartialEq)]
+#[derive(Clone, Copy, PartialEq)]
 enum ModeEnum {
     OnePlayer = 0,
     TwoPlayers = 1,
-    Max = 3,
+    Max = 2,
+}
+impl TryFrom<usize> for ModeEnum {
+    type Error = ();
+
+    fn try_from(v: usize) -> Result<Self, Self::Error> {
+        match v {
+            x if x == ModeEnum::OnePlayer as usize => Ok(ModeEnum::OnePlayer),
+            x if x == ModeEnum::TwoPlayers as usize => Ok(ModeEnum::TwoPlayers),
+            _ => Err(()),
+        }
+    }
+}
+
+impl ModeEnum {
+    pub fn increase(&mut self) {
+        *self = ((*self as usize + 1) % Self::Max as usize)
+            .try_into()
+            .unwrap();
+    }
+    pub fn decrease(&mut self) {
+        *self = ((*self as usize + Self::Max as usize - 1) % Self::Max as usize)
+            .try_into()
+            .unwrap();
+    }
 }
 
 #[derive(Clone, Copy, Default)]
@@ -43,6 +67,7 @@ impl Vec2 {
         self.y += other.y;
     }
 }
+
 struct Context {
     board: Vec<TurnEnum>,
     disk_aa: [String; TurnEnum::Max as usize],
@@ -52,6 +77,7 @@ struct Context {
     turn_names: [String; TurnEnum::Max as usize],
     directions: [Vec2; DirectionEnum::Max as usize],
     mode_names: [String; ModeEnum::Max as usize],
+    mode: ModeEnum,
 }
 
 impl Context {
@@ -73,7 +99,8 @@ impl Context {
                 Vec2 { x: 1, y: 0 },
                 Vec2 { x: 1, y: -1 },
             ],
-            mode_names: ["1P GAME".to_string(), "2P GAME".to_string(), "".to_string()],
+            mode_names: ["1P GAME".to_string(), "2P GAME".to_string()],
+            mode: ModeEnum::Max,
         }
     }
     pub fn init(&mut self) {
@@ -279,16 +306,26 @@ impl Context {
         return count;
     }
     fn select_mode(&mut self) {
+        self.mode = ModeEnum::OnePlayer;
         loop {
             clearscreen::clear().unwrap();
 
             println!("모드를 선택하세요\n\n");
 
             for i in 0..ModeEnum::Max as usize {
+                print!("{}", if i == self.mode as usize { ">" } else { " " });
+
                 println!("{}\n", self.mode_names[i]);
             }
 
             match self.g.getch() {
+                Ok(Key::Char('w')) => {
+                    self.mode.decrease();
+                }
+                Ok(Key::Char('s')) => {
+                    self.mode.increase();
+                }
+
                 _ => {}
             }
         }
