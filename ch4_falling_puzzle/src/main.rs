@@ -3,13 +3,14 @@ use rand::{rngs::ThreadRng, seq::IndexedRandom};
 const FIELD_WIDTH: usize = 12;
 const FIELD_HEIGHT: usize = 18;
 
-const BLOCK_WIDTH: usize = 4;
-const BLOCK_HEIGHT: usize = 4;
+const BLOCK_WIDTH_MAX: usize = 4;
+const BLOCK_HEIGHT_MAX: usize = 4;
 
 enum BlockEnum {
     None = 0,
     Hard = 1,
-    Max = 2,
+    Fall = 2,
+    Max = 3,
 }
 
 impl TryFrom<usize> for BlockEnum {
@@ -19,6 +20,7 @@ impl TryFrom<usize> for BlockEnum {
         match v {
             x if x == BlockEnum::None as usize => Ok(BlockEnum::None),
             x if x == BlockEnum::Hard as usize => Ok(BlockEnum::Hard),
+            x if x == BlockEnum::Fall as usize => Ok(BlockEnum::Fall),
             _ => Err(()),
         }
     }
@@ -37,14 +39,14 @@ fn read_byte(data: &[u8], x: usize, y: usize) -> u8 {
 #[derive(Copy, Clone)]
 struct BlockShape {
     size: isize,
-    pattern: [u8; BLOCK_HEIGHT * BLOCK_WIDTH],
+    pattern: [u8; BLOCK_HEIGHT_MAX * BLOCK_WIDTH_MAX],
 }
 
 impl BlockShape {
     pub fn new() -> Self {
         Self {
             size: 0,
-            pattern: [0; BLOCK_HEIGHT * BLOCK_WIDTH],
+            pattern: [0; BLOCK_HEIGHT_MAX * BLOCK_WIDTH_MAX],
         }
     }
 }
@@ -114,6 +116,15 @@ impl Context {
         let mut screen = [0; FIELD_HEIGHT * FIELD_WIDTH];
         screen.clone_from(&self.field);
 
+        for y in 0..BLOCK_HEIGHT_MAX {
+            for x in 0..BLOCK_WIDTH_MAX {
+                if self.block.shape.pattern[y * BLOCK_WIDTH_MAX + x] > 0 {
+                    screen
+                        [(self.block.y as usize + y) * FIELD_WIDTH + (self.block.x as usize + x)] =
+                        BlockEnum::Fall as u8;
+                }
+            }
+        }
         for y in 0..FIELD_HEIGHT {
             for x in 0..FIELD_WIDTH {
                 match BlockEnum::try_from(read_byte(&screen, x, y) as usize).unwrap() {
@@ -123,6 +134,9 @@ impl Context {
                     BlockEnum::Hard => {
                         print!("+");
                     }
+                    BlockEnum::Fall => {
+                        print!("◇");
+                    }
                     _ => {}
                 }
             }
@@ -131,6 +145,8 @@ impl Context {
     }
     pub fn init_block(&mut self) {
         self.block.shape = *self.block_shapes.choose(&mut self.rng).unwrap();
+        self.block.x = FIELD_WIDTH as isize / 2 - self.block.shape.size / 2;
+        self.block.y = 0;
     }
 }
 
