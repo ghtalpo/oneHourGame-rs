@@ -193,6 +193,8 @@ impl Context {
                     }
                 }
             }
+
+            self.init_block();
         }
 
         self.draw_screen();
