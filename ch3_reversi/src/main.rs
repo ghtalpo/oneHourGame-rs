@@ -120,7 +120,7 @@ impl Context {
                     std::process::exit(0);
                 }
                 _ => {
-                    if self.check_can_place(self.turn, self.cursor_position) {
+                    if self.check_can_place(self.turn, self.cursor_position, true) {
                         return self.cursor_position;
                     } else {
                         println!("놓을 수 없는 곳입니다.");
@@ -134,7 +134,7 @@ impl Context {
                 (BOARD_HEIGHT as i8 + self.cursor_position.y) % (BOARD_HEIGHT as i8);
         }
     }
-    pub fn check_can_place(&self, color: TurnEnum, position: Vec2) -> bool {
+    pub fn check_can_place(&self, color: TurnEnum, position: Vec2, turn_over: bool) -> bool {
         let mut can_place = false;
         if self.board[position.y as usize * BOARD_WIDTH + position.x as usize] != TurnEnum::None {
             return false;
