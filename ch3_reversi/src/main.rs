@@ -325,8 +325,9 @@ impl Context {
                 Ok(Key::Char('s')) => {
                     self.mode.increase();
                 }
-
-                _ => {}
+                _ => {
+                    return;
+                }
             }
         }
     }
