@@ -172,6 +172,11 @@ impl Context {
         }
         self.block = rotated_block.clone();
     }
+    fn fall_block(&mut self) {
+        self.block.y += 1;
+
+        self.draw_screen();
+    }
 }
 
 fn main() {
