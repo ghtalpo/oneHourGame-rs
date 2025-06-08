@@ -1,6 +1,9 @@
 const FIELD_WIDTH: usize = 12;
 const FIELD_HEIGHT: usize = 18;
 
+const BLOCK_WIDTH: usize = 4;
+const BLOCK_HEIGHT: usize = 4;
+
 enum BlockEnum {
     None = 0,
     Hard = 1,
@@ -29,9 +32,15 @@ fn read_byte(data: &[u8], x: usize, y: usize) -> u8 {
     data[y * FIELD_WIDTH + x]
 }
 
+struct BlockShape {
+    size: isize,
+    pattern: [u8; BLOCK_HEIGHT * BLOCK_WIDTH],
+}
+
 struct Context {
     field: [u8; FIELD_HEIGHT * FIELD_WIDTH],
     default_field: [u8; FIELD_HEIGHT * FIELD_WIDTH],
+    block_shapes: [BlockShape; BlockShapeEnum::Max as usize],
 }
 
 impl Context {
@@ -46,9 +55,20 @@ impl Context {
             0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1,
             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
         ];
+        let block_shapes = [
+            BlockShape {
+                size: 3,
+                pattern: [0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+            },
+            BlockShape {
+                size: 3,
+                pattern: [0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            },
+        ];
         Self {
             field: [0; FIELD_HEIGHT * FIELD_WIDTH],
             default_field,
+            block_shapes,
         }
     }
     pub fn init(&mut self) {
