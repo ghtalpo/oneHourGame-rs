@@ -194,6 +194,8 @@ impl Context {
                 }
             }
 
+            self.erase_line();
+
             self.init_block();
 
             if self.block_intersect_field() {
@@ -223,6 +225,7 @@ impl Context {
         }
         return false;
     }
+    fn erase_line(&mut self) {}
 }
 
 fn main() {
