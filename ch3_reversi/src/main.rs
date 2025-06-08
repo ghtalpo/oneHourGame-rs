@@ -22,6 +22,8 @@ struct Context {
     disk_aa: [String; TurnEnum::Max as usize],
     cursor_position: Vec2,
     g: Getch,
+    turn: TurnEnum,
+    turn_names: [String; TurnEnum::Max as usize],
 }
 
 impl Context {
@@ -31,6 +33,8 @@ impl Context {
             disk_aa: ["●".to_string(), "○".to_string(), "·".to_string()],
             cursor_position: Vec2::default(),
             g: Getch::new(),
+            turn: TurnEnum::Black,
+            turn_names: ["검은 돌".to_string(), "흰 돌".to_string(), "·".to_string()],
         }
     }
     pub fn init(&mut self) {
@@ -63,6 +67,7 @@ impl Context {
             }
         }
         println!();
+        println!("{}의 턴입니다.", self.turn_names[self.turn as usize]);
     }
     pub fn input_position(&mut self) -> Vec2 {
         loop {
