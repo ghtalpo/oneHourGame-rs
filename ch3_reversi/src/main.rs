@@ -90,7 +90,12 @@ impl Context {
                     std::process::exit(0);
                 }
                 _ => {
-                    return self.cursor_position;
+                    if self.check_can_place(self.turn, self.cursor_position) {
+                        return self.cursor_position;
+                    } else {
+                        println!("놓을 수 없는 곳입니다.");
+                        let _ = self.g.getch();
+                    }
                 }
             }
             self.cursor_position.x =
@@ -98,6 +103,9 @@ impl Context {
             self.cursor_position.y =
                 (BOARD_HEIGHT as i8 + self.cursor_position.y) % (BOARD_HEIGHT as i8);
         }
+    }
+    pub fn check_can_place(&self, color: TurnEnum, position: Vec2) -> bool {
+        return false;
     }
 }
 
