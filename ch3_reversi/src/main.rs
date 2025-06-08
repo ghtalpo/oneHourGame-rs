@@ -97,7 +97,11 @@ impl Context {
             }
         }
         println!();
-        println!("{}의 턴입니다.", self.turn_names[self.turn as usize]);
+
+        if self.turn != TurnEnum::None {
+            println!("{}의 턴입니다.", self.turn_names[self.turn as usize]);
+        } else {
+        }
     }
     pub fn input_position(&mut self) -> Vec2 {
         loop {
@@ -239,7 +243,15 @@ fn main() {
             } else {
                 TurnEnum::Black
             };
-            continue;
+            if !ctx.check_can_place_all(ctx.turn) {
+                ctx.turn = TurnEnum::None;
+
+                ctx.draw_screen();
+
+                let _ = ctx.g.getch();
+            } else {
+                continue;
+            }
         }
         let mut place_position = Vec2::default();
 
