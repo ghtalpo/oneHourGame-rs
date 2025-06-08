@@ -377,6 +377,19 @@ fn main() {
         } else {
             ctx.draw_screen();
 
+            let mut positions = Vec::new();
+            for y in 0..BOARD_HEIGHT {
+                for x in 0..BOARD_WIDTH {
+                    let position = Vec2 {
+                        x: x as i8,
+                        y: y as i8,
+                    };
+                    if ctx.check_can_place(ctx.turn, position, false) {
+                        positions.push(position);
+                    }
+                }
+            }
+
             let _ = ctx.g.getch();
         }
 
