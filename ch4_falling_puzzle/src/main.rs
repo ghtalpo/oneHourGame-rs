@@ -1,3 +1,4 @@
+use getch_rs::{Getch, Key};
 use rand::{rngs::ThreadRng, seq::IndexedRandom};
 
 const FIELD_WIDTH: usize = 12;
@@ -72,6 +73,7 @@ struct Context {
     default_field: [u8; FIELD_HEIGHT * FIELD_WIDTH],
     block_shapes: [BlockShape; BlockShapeEnum::Max as usize],
     block: Block,
+    g: Getch,
     rng: ThreadRng,
 }
 
@@ -102,6 +104,7 @@ impl Context {
             default_field,
             block_shapes,
             block: Block::new(),
+            g: Getch::new(),
             rng: rand::rng(),
         }
     }
@@ -125,6 +128,9 @@ impl Context {
                 }
             }
         }
+
+        clearscreen::clear().unwrap();
+
         for y in 0..FIELD_HEIGHT {
             for x in 0..FIELD_WIDTH {
                 match BlockEnum::try_from(read_byte(&screen, x, y) as usize).unwrap() {
@@ -153,5 +159,24 @@ impl Context {
 fn main() {
     let mut ctx = Context::new();
     ctx.init();
-    // loop {}
+    loop {
+        // FIXME: _kbhit 류의 함수가 필요함
+        match ctx.g.getch() {
+            Ok(Key::Char('w')) => {}
+            Ok(Key::Char('s')) => {
+                ctx.block.y += 1;
+            }
+            Ok(Key::Char('a')) => {
+                ctx.block.x -= 1;
+            }
+            Ok(Key::Char('d')) => {
+                ctx.block.x += 1;
+            }
+            Ok(Key::Esc) => {
+                std::process::exit(0);
+            }
+            _ => {}
+        }
+        ctx.draw_screen();
+    }
 }
