@@ -19,6 +19,12 @@ impl TryFrom<usize> for BlockEnum {
     }
 }
 
+enum BlockShapeEnum {
+    I = 0,
+    L = 1,
+    Max = 2,
+}
+
 fn read_byte(data: &[u8], x: usize, y: usize) -> u8 {
     data[y * FIELD_WIDTH + x]
 }
