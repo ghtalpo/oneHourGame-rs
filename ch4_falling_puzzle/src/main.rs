@@ -173,11 +173,17 @@ impl Context {
         self.block = rotated_block.clone();
     }
     fn fall_block(&mut self) {
+        let last_block = self.block.clone();
+
         self.block.y += 1;
+
+        if self.block_intersect_field() {
+            self.block = last_block.clone();
+        }
 
         self.draw_screen();
     }
-    fn block_intersection(&self) -> bool {
+    fn block_intersect_field(&self) -> bool {
         for y in 0..self.block.shape.size {
             for x in 0..self.block.shape.size {
                 if self.block.shape.pattern[y * BLOCK_WIDTH_MAX + x] > 0 {
@@ -204,6 +210,7 @@ fn main() {
     ctx.init();
     loop {
         // FIXME: _kbhit 류의 함수가 필요함
+        let last_block = ctx.block.clone();
         match ctx.g.getch() {
             Ok(Key::Char('w')) => {}
             Ok(Key::Char('s')) => {
@@ -222,6 +229,11 @@ fn main() {
                 ctx.rotate_block();
             }
         }
-        ctx.draw_screen();
+
+        if ctx.block_intersect_field() {
+            ctx.block = last_block.clone();
+        } else {
+            ctx.draw_screen();
+        }
     }
 }
