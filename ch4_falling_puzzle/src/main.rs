@@ -143,7 +143,7 @@ impl Context {
                 }
             }
         }
-        return false;
+        false
     }
 
     // [6-2]채워진 행의 블록을 삭제하는 함수를 선언한다
@@ -239,7 +239,7 @@ impl Context {
 
     // [6-4]낙하 블록을 회전시키는 함수를 선언한다
     pub fn rotate_block(&mut self) {
-        let mut rotated_block = self.block.clone();
+        let mut rotated_block = self.block;
 
         for y in 0..self.block.shape.size {
             for x in 0..self.block.shape.size {
@@ -251,7 +251,7 @@ impl Context {
         }
 
         // [6-4-5]회전 후의 블록을 적용한다
-        self.block = rotated_block.clone();
+        self.block = rotated_block;
     }
 
     // [6-5]낙하 블록을 초기화하는 함수를 선언한다
@@ -285,19 +285,19 @@ impl Context {
     // [6-7]낙하 블록을 떨어뜨리는 함수를 선언한다
     fn fall_block(&mut self) {
         // [6-7-1]블록 이동 전의 상태를 선언한다
-        let last_block = self.block.clone();
+        let last_block = self.block;
 
         self.block.y += 1; // [6-7-2]블록을 떨어뜨린다
 
         // [6-7-3]블록과 필드가 겹쳤는지 여부를 판정한다
         if self.block_intersect_field() {
             // [6-7-4]낙하 블록을 이동 전의 상태로 되돌린다
-            self.block = last_block.clone();
+            self.block = last_block;
 
             for y in 0..self.block.shape.size {
                 for x in 0..self.block.shape.size {
                     // [6-7-7]블록이 있는 칸인지 여부를 판정한다
-                    if self.block.shape.pattern[y as usize * BLOCK_WIDTH_MAX + x as usize] > 0 {
+                    if self.block.shape.pattern[y * BLOCK_WIDTH_MAX + x] > 0 {
                         // [6-7-8]필드에 지울 수 있는 블록을 써넣는다
                         self.field[(self.block.y as usize + y) * FIELD_WIDTH
                             + (self.block.x as usize + x)] = BlockEnum::Soft as u8;
@@ -326,7 +326,7 @@ fn main() {
     // [6-8-4]메인 루프
     loop {
         // FIXME: _kbhit 류의 함수가 필요함
-        let last_block = ctx.block.clone();
+        let last_block = ctx.block;
         match ctx.g.getch() {
             Ok(Key::Char('w')) => {}
             Ok(Key::Char('s')) => {
@@ -347,7 +347,7 @@ fn main() {
         }
 
         if ctx.block_intersect_field() {
-            ctx.block = last_block.clone();
+            ctx.block = last_block;
         } else {
             ctx.draw_screen();
         }
