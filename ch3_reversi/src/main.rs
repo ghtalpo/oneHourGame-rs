@@ -63,15 +63,18 @@ impl Context {
                 Vec2 { x: 0, y: 1 },
                 Vec2 { x: 1, y: 1 },
                 Vec2 { x: 1, y: 0 },
-                Vec2 { x: 1, y: 1 },
+                Vec2 { x: 1, y: -1 },
             ],
         }
     }
     pub fn init(&mut self) {
+        self.board = vec![TurnEnum::None; BOARD_HEIGHT * BOARD_WIDTH];
         self.board[4 * BOARD_WIDTH + 3] = TurnEnum::Black;
         self.board[3 * BOARD_WIDTH + 4] = TurnEnum::Black;
         self.board[3 * BOARD_WIDTH + 3] = TurnEnum::White;
         self.board[4 * BOARD_WIDTH + 4] = TurnEnum::White;
+
+        self.turn = TurnEnum::Black;
 
         self.cursor_position = Vec2 { x: 3, y: 3 };
 
@@ -271,7 +274,7 @@ impl Context {
 fn main() {
     let mut ctx = Context::new();
     ctx.init();
-    loop {
+    'start: loop {
         if !ctx.check_can_place_all(ctx.turn) {
             ctx.turn = if ctx.turn == TurnEnum::Black {
                 TurnEnum::White
@@ -284,6 +287,9 @@ fn main() {
                 ctx.draw_screen();
 
                 let _ = ctx.g.getch();
+
+                ctx.init();
+                continue 'start;
             } else {
                 continue;
             }
