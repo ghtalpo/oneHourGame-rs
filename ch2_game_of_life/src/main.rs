@@ -44,13 +44,15 @@ impl Context {
     pub fn get_living_cells_count(&self, x_: i64, y_: i64) -> u64 {
         let mut count = 0;
         for y in y_ - 1..=y_ + 1 {
-            if y < 0 || y >= FieldHeight as i64 {
-                continue;
-            }
+            // if y < 0 || y >= FieldHeight as i64 {
+            //     continue;
+            // }
+            let rooped_y = (FieldHeight as i64 + y) % FieldHeight as i64;
             for x in x_ - 1..=x_ + 1 {
-                if x < 0 || x >= FieldWidth as i64 {
-                    continue;
-                }
+                // if x < 0 || x >= FieldWidth as i64 {
+                //     continue;
+                // }
+                let rooped_x = (FieldWidth as i64 + x) % FieldWidth as i64;
             }
         }
         return count;
