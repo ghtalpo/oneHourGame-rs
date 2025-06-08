@@ -241,6 +241,21 @@ impl Context {
                         self.field[y * FIELD_WIDTH + x] = BlockEnum::None as u8;
                     }
                 }
+
+                for x in 0..FIELD_WIDTH {
+                    for y2 in (0..=y).rev() {
+                        if self.field[y2 * FIELD_WIDTH + x] == BlockEnum::Hard as u8 {
+                            break;
+                        }
+
+                        if y2 == 0 {
+                            self.field[y2 * FIELD_WIDTH + x] = BlockEnum::None as u8;
+                        } else {
+                            self.field[y2 * FIELD_WIDTH + x] =
+                                self.field[(y2 - 1) * FIELD_WIDTH + x];
+                        }
+                    }
+                }
             }
         }
     }
