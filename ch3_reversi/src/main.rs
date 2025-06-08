@@ -101,6 +101,30 @@ impl Context {
         if self.turn != TurnEnum::None {
             println!("{}의 턴입니다.", self.turn_names[self.turn as usize]);
         } else {
+            let black_count = self.get_disk_count(TurnEnum::Black);
+
+            let white_count = self.get_disk_count(TurnEnum::White);
+
+            let winner = if black_count > white_count {
+                TurnEnum::Black
+            } else if white_count > black_count {
+                TurnEnum::White
+            } else {
+                TurnEnum::None
+            };
+            println!(
+                "{}{} - {}{}",
+                self.turn_names[TurnEnum::Black as usize],
+                black_count,
+                self.turn_names[TurnEnum::White as usize],
+                white_count,
+            );
+
+            if winner == TurnEnum::None {
+                println!("무승부");
+            } else {
+                println!("{}의 승리", self.turn_names[winner as usize]);
+            }
         }
     }
     pub fn input_position(&mut self) -> Vec2 {
@@ -230,6 +254,17 @@ impl Context {
             }
         }
         return false;
+    }
+    fn get_disk_count(&self, color: TurnEnum) -> u32 {
+        let mut count = 0;
+        for y in 0..BOARD_HEIGHT {
+            for x in 0..BOARD_WIDTH {
+                if self.board[y as usize * BOARD_WIDTH + x as usize] == color {
+                    count += 1;
+                }
+            }
+        }
+        return count;
     }
 }
 
