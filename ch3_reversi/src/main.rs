@@ -3,7 +3,7 @@ use getch_rs::{Getch, Key};
 const BOARD_WIDTH: usize = 8;
 const BOARD_HEIGHT: usize = 8;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 enum TurnEnum {
     Black = 0,
     White = 1,
@@ -110,5 +110,10 @@ fn main() {
         place_position = ctx.input_position();
 
         ctx.board[place_position.y as usize * BOARD_WIDTH + place_position.x as usize] = ctx.turn;
+        ctx.turn = if ctx.turn == TurnEnum::Black {
+            TurnEnum::White
+        } else {
+            TurnEnum::Black
+        };
     }
 }
