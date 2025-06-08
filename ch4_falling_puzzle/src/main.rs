@@ -177,6 +177,26 @@ impl Context {
 
         self.draw_screen();
     }
+    fn block_intersection(&self) -> bool {
+        for y in 0..self.block.shape.size {
+            for x in 0..self.block.shape.size {
+                if self.block.shape.pattern[y * BLOCK_WIDTH_MAX + x] > 0 {
+                    let global_x = self.block.x + x as isize;
+                    let global_y = self.block.y + y as isize;
+                    if global_x < 0
+                        || global_x >= FIELD_WIDTH as isize
+                        || global_y < 0
+                        || global_y >= FIELD_HEIGHT as isize
+                        || self.field[global_y as usize * FIELD_WIDTH + global_x as usize]
+                            != BlockEnum::None as u8
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
 }
 
 fn main() {
