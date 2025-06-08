@@ -37,10 +37,36 @@ struct BlockShape {
     pattern: [u8; BLOCK_HEIGHT * BLOCK_WIDTH],
 }
 
+impl BlockShape {
+    pub fn new() -> Self {
+        Self {
+            size: 0,
+            pattern: [0; BLOCK_HEIGHT * BLOCK_WIDTH],
+        }
+    }
+}
+
+struct Block {
+    x: isize,
+    y: isize,
+    shape: BlockShape,
+}
+
+impl Block {
+    pub fn new() -> Self {
+        Self {
+            x: 0,
+            y: 0,
+            shape: BlockShape::new(),
+        }
+    }
+}
+
 struct Context {
     field: [u8; FIELD_HEIGHT * FIELD_WIDTH],
     default_field: [u8; FIELD_HEIGHT * FIELD_WIDTH],
     block_shapes: [BlockShape; BlockShapeEnum::Max as usize],
+    block: Block,
 }
 
 impl Context {
@@ -69,6 +95,7 @@ impl Context {
             field: [0; FIELD_HEIGHT * FIELD_WIDTH],
             default_field,
             block_shapes,
+            block: Block::new(),
         }
     }
     pub fn init(&mut self) {
