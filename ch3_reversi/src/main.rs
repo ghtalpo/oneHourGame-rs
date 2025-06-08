@@ -128,16 +128,20 @@ impl Context {
             for x in 0..BOARD_WIDTH {
                 print!("{}", self.disk_aa[self.board[y * BOARD_WIDTH + x] as usize]);
             }
-            if y == self.cursor_position.y as usize {
-                print!("←");
+            if self.is_player[self.turn as usize] {
+                if y == self.cursor_position.y as usize {
+                    print!("←");
+                }
             }
             println!();
         }
-        for x in 0..BOARD_WIDTH {
-            if x == self.cursor_position.x as usize {
-                print!("↑");
-            } else {
-                print!(" ");
+        if self.is_player[self.turn as usize] {
+            for x in 0..BOARD_WIDTH {
+                if x == self.cursor_position.x as usize {
+                    print!("↑");
+                } else {
+                    print!(" ");
+                }
             }
         }
         println!();
