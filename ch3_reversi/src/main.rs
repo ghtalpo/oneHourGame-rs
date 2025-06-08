@@ -78,6 +78,7 @@ struct Context {
     directions: [Vec2; DirectionEnum::Max as usize],
     mode_names: [String; ModeEnum::Max as usize],
     mode: ModeEnum,
+    is_player: [bool; TurnEnum::Max as usize],
 }
 
 impl Context {
@@ -101,6 +102,7 @@ impl Context {
             ],
             mode_names: ["1P GAME".to_string(), "2P GAME".to_string()],
             mode: ModeEnum::Max,
+            is_player: [false; TurnEnum::Max as usize],
         }
     }
     pub fn init(&mut self) {
@@ -326,6 +328,17 @@ impl Context {
                     self.mode.increase();
                 }
                 _ => {
+                    match self.mode {
+                        ModeEnum::OnePlayer => {
+                            self.is_player[TurnEnum::Black as usize] = true;
+                            self.is_player[TurnEnum::White as usize] = false;
+                        }
+                        ModeEnum::TwoPlayers => {
+                            self.is_player[TurnEnum::Black as usize] = true;
+                            self.is_player[TurnEnum::White as usize] = true;
+                        }
+                        _ => {}
+                    }
                     return;
                 }
             }
