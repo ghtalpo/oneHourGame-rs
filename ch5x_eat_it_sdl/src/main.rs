@@ -1,17 +1,25 @@
 use std::time::{Duration, SystemTime};
 
-use sdl3::{event::Event, pixels::Color};
+use sdl3::{
+    event::Event,
+    pixels::Color,
+    render::{Canvas, FRect},
+    video::Window,
+};
 
 const MAZE_WIDTH: usize = 19;
 const MAZE_HEIGHT: usize = 19;
 
+const CELL_SIZE: f32 = 32.0;
+
 struct Context {
     maze: Vec<String>,
     default_maze: Vec<String>,
+    canvas: Canvas<Window>,
 }
 
 impl Context {
-    pub fn new() -> Self {
+    pub fn new(canvas: Canvas<Window>) -> Self {
         let default_maze = vec![
             "#########o#########",
             "#ooooooo#o#ooooooo#",
@@ -38,13 +46,65 @@ impl Context {
         .collect();
 
         Self {
-            maze: Vec::new(),
+            maze: Vec::with_capacity(MAZE_HEIGHT),
             default_maze,
+            canvas,
         }
     }
 
     pub fn init(&mut self) {
-        self.maze.clone_from_slice(&self.default_maze);
+        // self.maze.clone_from_slice(&self.default_maze);
+        for index in 0..MAZE_HEIGHT {
+            self.maze
+                .insert(index, self.default_maze.get(index).unwrap().clone());
+        }
+
+        self.draw_maze();
+    }
+
+    pub fn draw_maze(&mut self) {
+        let mut screen: Vec<String> = Vec::with_capacity(MAZE_HEIGHT);
+
+        // screen.clone_from_slice(&self.maze);
+        for index in 0..MAZE_HEIGHT {
+            screen.insert(index, self.maze.get(index).unwrap().clone());
+        }
+
+        self.canvas.set_draw_color(Color::RGB(0, 0, 0));
+        self.canvas.clear();
+
+        for y in 0..MAZE_HEIGHT {
+            for x in 0..MAZE_WIDTH {
+                match screen[y].chars().nth(x) {
+                    Some(' ') => {}
+                    Some('#') => {
+                        self.canvas.set_draw_color(Color::WHITE);
+                        self.canvas
+                            .fill_rect(FRect::new(
+                                x as f32 * CELL_SIZE,
+                                y as f32 * CELL_SIZE,
+                                CELL_SIZE,
+                                CELL_SIZE,
+                            ))
+                            .unwrap();
+                    }
+                    Some('o') => {
+                        self.canvas.set_draw_color(Color::RED);
+                        self.canvas
+                            .draw_rect(FRect::new(
+                                x as f32 * CELL_SIZE + CELL_SIZE / 2.0,
+                                y as f32 * CELL_SIZE + CELL_SIZE / 2.0,
+                                3.0,
+                                3.0,
+                            ))
+                            .unwrap();
+                    }
+                    _ => {}
+                }
+            }
+        }
+
+        self.canvas.present();
     }
 }
 
@@ -62,7 +122,7 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut events = sdl_context.event_pump()?;
 
-    let mut ctx = Context::new();
+    let mut ctx = Context::new(canvas);
     ctx.init();
 
     let mut last_clock = SystemTime::now();
@@ -101,17 +161,6 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
                 _ => {}
             }
         }
-
-        // if ctx.block_intersect_field() {
-        //     // ctx.block = last_block;
-        // } else {
-        canvas.set_draw_color(Color::RGB(0, 0, 0));
-        canvas.clear();
-
-        // draw something
-
-        canvas.present();
-        // }
 
         std::thread::sleep(Duration::from_millis(100));
     }
