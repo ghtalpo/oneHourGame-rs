@@ -12,10 +12,44 @@ const MAZE_HEIGHT: usize = 19;
 
 const CELL_SIZE: f32 = 32.0;
 
+enum CharacterEnum {
+    Player = 0,
+    Max = 1,
+}
+
+struct Character {
+    position: Vec2,
+}
+
+impl Character {
+    pub fn new() -> Self {
+        Self {
+            position: Vec2::default(),
+        }
+    }
+}
+
+#[derive(Clone, Copy, Default)]
+struct Vec2 {
+    x: i8,
+    y: i8,
+}
+
+impl Vec2 {
+    pub fn add(&mut self, other: &Vec2) {
+        self.x += other.x;
+        self.y += other.y;
+    }
+    // pub fn is_valid(&self) -> bool {
+    //     !(self.x < 0 || self.x >= BOARD_WIDTH as i8 || self.y < 0 || self.y >= BOARD_HEIGHT as i8)
+    // }
+}
+
 struct Context {
     maze: Vec<String>,
     default_maze: Vec<String>,
     canvas: Canvas<Window>,
+    characters: [Character; CharacterEnum::Max as usize],
 }
 
 impl Context {
@@ -49,6 +83,7 @@ impl Context {
             maze: Vec::with_capacity(MAZE_HEIGHT),
             default_maze,
             canvas,
+            characters: [Character::new()],
         }
     }
 
