@@ -243,6 +243,10 @@ impl Context {
                         self.canvas.set_draw_color(Color::GREEN);
                         self.draw_circle(y, x, 90);
                     }
+                    Some('4') => {
+                        self.canvas.set_draw_color(Color::MAGENTA);
+                        self.draw_circle(y, x, 60);
+                    }
                     _ => {}
                 }
             }
