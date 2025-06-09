@@ -355,6 +355,12 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
                             CharacterEnum::Random => {
                                 new_position = ctx.get_random_position(ctx.characters[i].clone());
                             }
+                            CharacterEnum::Chase => {
+                                new_position = ctx.get_chase_position(
+                                    ctx.characters[i].clone(),
+                                    ctx.characters[CharacterEnum::Player as usize].position,
+                                );
+                            }
                             _ => {}
                         }
                         ctx.characters[i].last_position = ctx.characters[i].position;
