@@ -237,12 +237,16 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         new_position.get_loop_position();
 
-        if ctx.maze[new_position.y as usize]
+        let current_block = ctx.maze[new_position.y as usize]
             .chars()
             .nth(new_position.x as usize)
-            .unwrap()
-            != '#'
-        {
+            .unwrap();
+        if current_block != '#' {
+            let x = new_position.x as usize;
+            let y = new_position.y as usize;
+            if current_block == 'o' {
+                ctx.maze[y].replace_range(x..x + 1, " ");
+            }
             ctx.characters[CharacterEnum::Player as usize].position = new_position;
         }
 
