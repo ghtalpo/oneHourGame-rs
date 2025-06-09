@@ -159,6 +159,10 @@ impl Context {
                         self.canvas.set_draw_color(Color::YELLOW);
                         self.draw_circle(y, x, 30);
                     }
+                    Some('1') => {
+                        self.canvas.set_draw_color(Color::BLUE);
+                        self.draw_circle(y, x, 72);
+                    }
                     _ => {}
                 }
             }
