@@ -22,6 +22,18 @@ enum CharacterEnum {
     Max = 2,
 }
 
+impl TryFrom<usize> for CharacterEnum {
+    type Error = ();
+
+    fn try_from(v: usize) -> Result<Self, Self::Error> {
+        match v {
+            x if x == CharacterEnum::Player as usize => Ok(CharacterEnum::Player),
+            x if x == CharacterEnum::Random as usize => Ok(CharacterEnum::Random),
+            _ => Err(()),
+        }
+    }
+}
+
 struct Character {
     position: Vec2,
     default_position: Vec2,
@@ -219,8 +231,12 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
                 if (elapsed.as_millis() as f32) >= INTERVAL {
                     last_clock = SystemTime::now();
 
-                    // ctx.fall_block(); // [6-8-8]낙하 블록을 떨어뜨리는 함수를 호출한다
-                    //                   // continue;
+                    for i in CharacterEnum::Player as usize + 1..CharacterEnum::Max as usize {
+                        match CharacterEnum::try_from(i).unwrap() {
+                            CharacterEnum::Random => {}
+                            _ => {}
+                        }
+                    }
                 }
             }
             Err(e) => {
