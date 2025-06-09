@@ -43,9 +43,10 @@ impl Vec2 {
         self.x += other.x;
         self.y += other.y;
     }
-    // pub fn is_valid(&self) -> bool {
-    //     !(self.x < 0 || self.x >= BOARD_WIDTH as i8 || self.y < 0 || self.y >= BOARD_HEIGHT as i8)
-    // }
+    pub fn get_loop_position(&mut self) {
+        self.x = (self.x + MAZE_WIDTH as i8) % (MAZE_WIDTH as i8);
+        self.y = (self.y + MAZE_HEIGHT as i8) % (MAZE_HEIGHT as i8);
+    }
 }
 
 struct Context {
@@ -234,13 +235,15 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
                 _ => {}
             }
         }
+        new_position.get_loop_position();
+
         if ctx.maze[new_position.y as usize]
             .chars()
             .nth(new_position.x as usize)
             .unwrap()
             != '#'
         {
-        ctx.characters[CharacterEnum::Player as usize].position = new_position;
+            ctx.characters[CharacterEnum::Player as usize].position = new_position;
         }
 
         ctx.draw_maze();
