@@ -238,7 +238,13 @@ impl Context {
 
             new_position.get_loop_position();
 
-            positions.push(new_position);
+            let current_block = self.maze[new_position.y as usize]
+                .chars()
+                .nth(new_position.x as usize)
+                .unwrap();
+            if current_block != '#' {
+                positions.push(new_position);
+            }
         }
         *positions.choose(&mut self.rng).unwrap()
     }
