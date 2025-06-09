@@ -22,7 +22,8 @@ enum CharacterEnum {
     Player = 0,
     Random = 1,
     Chase = 2,
-    Max = 3,
+    Ambush = 3,
+    Max = 4,
 }
 
 impl TryFrom<usize> for CharacterEnum {
@@ -32,7 +33,7 @@ impl TryFrom<usize> for CharacterEnum {
         match v {
             x if x == CharacterEnum::Player as usize => Ok(CharacterEnum::Player),
             x if x == CharacterEnum::Random as usize => Ok(CharacterEnum::Random),
-            x if x == CharacterEnum::Chase as usize => Ok(CharacterEnum::Chase),
+            x if x == CharacterEnum::Ambush as usize => Ok(CharacterEnum::Ambush),
             _ => Err(()),
         }
     }
@@ -136,6 +137,11 @@ impl Context {
                 Character {
                     position: Vec2::default(),
                     default_position: Vec2 { x: 17, y: 1 },
+                    last_position: Vec2::default(),
+                },
+                Character {
+                    position: Vec2::default(),
+                    default_position: Vec2 { x: 1, y: 17 },
                     last_position: Vec2::default(),
                 },
             ],
