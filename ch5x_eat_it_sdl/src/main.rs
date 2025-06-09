@@ -602,6 +602,7 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
                         Keycode::Escape => std::process::exit(0),
                         _ => {
                             ctx.game_state = GameStateEnum::Playing;
+                            ctx.init();
                         }
                     },
                     _ => {}
