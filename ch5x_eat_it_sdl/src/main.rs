@@ -26,11 +26,11 @@ const INTERVAL: f32 = 1000.0 / FPS as f32; // 밀리 초
 // [3-1]캐릭터의 종류를 정의한다
 enum CharacterEnum {
     Player = 0,
-    Random = 1,
-    Chase = 2,
-    Ambush = 3,
-    Siege = 4,
-    Max = 5,
+    Random,
+    Chase,
+    Ambush,
+    Siege,
+    Max,
 }
 
 impl TryFrom<usize> for CharacterEnum {
@@ -51,10 +51,10 @@ impl TryFrom<usize> for CharacterEnum {
 // [3-2]방향의 종류를 정의한다
 enum DirectionEnum {
     Up = 0,
-    Left = 1,
-    Down = 2,
-    Right = 3,
-    Max = 4,
+    Left,
+    Down,
+    Right,
+    Max,
 }
 
 #[derive(PartialEq)]
