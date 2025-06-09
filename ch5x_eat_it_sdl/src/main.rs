@@ -82,6 +82,12 @@ impl Vec2 {
             y: self.y + other.y,
         }
     }
+    pub fn subtract_new(&self, other: &Vec2) -> Vec2 {
+        Vec2 {
+            x: self.x - other.x,
+            y: self.y - other.y,
+        }
+    }
     pub fn get_loop_position(&mut self) {
         self.x = (self.x + MAZE_WIDTH as i8) % (MAZE_WIDTH as i8);
         self.y = (self.y + MAZE_HEIGHT as i8) % (MAZE_HEIGHT as i8);
@@ -379,6 +385,24 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
                                     ctx.characters[CharacterEnum::Player as usize].position,
                                 );
                             }
+                            CharacterEnum::Ambush => {
+                                let player_direction = ctx.characters
+                                    [CharacterEnum::Player as usize]
+                                    .position
+                                    .subtract_new(
+                                        &ctx.characters[CharacterEnum::Player as usize]
+                                            .last_position,
+                                    );
+
+                                let mut target_position =
+                                    ctx.characters[CharacterEnum::Player as usize].position;
+
+                                for _ in 0..3 {
+                                    target_position.add(&player_direction);
+                                }
+
+                                target_position.get_loop_position();
+
                             _ => {}
                         }
                         ctx.characters[i].last_position = ctx.characters[i].position;
@@ -394,6 +418,10 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
 
         let mut new_position = ctx.characters[CharacterEnum::Player as usize].position;
+        let mut key_up = false;
+        let mut key_down = false;
+        let mut key_left = false;
+        let mut key_right = false;
         for event in events.poll_iter() {
             match event {
                 Event::Quit { .. } => break 'running,
@@ -401,16 +429,30 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
                     keycode: Some(keycode),
                     ..
                 } => match keycode {
-                    Keycode::W => new_position.y -= 1,
-                    Keycode::S => new_position.y += 1,
-                    Keycode::A => new_position.x -= 1,
-                    Keycode::D => new_position.x += 1,
+                    Keycode::W => key_up = true,
+                    Keycode::S => key_down = true,
+                    Keycode::A => key_left = true,
+                    Keycode::D => key_right = true,
                     Keycode::Escape => std::process::exit(0),
                     _ => {}
                 },
                 _ => {}
             }
         }
+
+        if key_up {
+            new_position.y -= 1;
+        }
+        if key_down {
+            new_position.y += 1;
+        }
+        if key_left {
+            new_position.x -= 1;
+        }
+        if key_right {
+            new_position.x += 1;
+        }
+
         new_position.get_loop_position();
 
         let current_block = ctx.maze[new_position.y as usize]
@@ -418,6 +460,9 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
             .nth(new_position.x as usize)
             .unwrap();
         if current_block != '#' {
+            ctx.characters[CharacterEnum::Player as usize].last_position =
+                ctx.characters[CharacterEnum::Player as usize].position;
+
             let x = new_position.x as usize;
             let y = new_position.y as usize;
             if current_block == 'o' {
