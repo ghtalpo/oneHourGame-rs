@@ -290,12 +290,17 @@ impl Context {
                 let new_distance = distances[to_check_positions[0].y as usize * MAZE_WIDTH
                     + to_check_positions[0].x as usize]
                     + 1;
-                if distances[to_check_positions[0].y as usize * MAZE_WIDTH
+                if (distances[to_check_positions[0].y as usize * MAZE_WIDTH
                     + to_check_positions[0].x as usize]
                     < 0
                     || new_distance
                         < distances[to_check_positions[0].y as usize * MAZE_WIDTH
-                            + to_check_positions[0].x as usize]
+                            + to_check_positions[0].x as usize])
+                    && self.maze[new_position.y as usize]
+                        .chars()
+                        .nth(new_position.x as usize)
+                        .unwrap()
+                        != '#'
                 {
                     distances[to_check_positions[0].y as usize * MAZE_WIDTH
                         + to_check_positions[0].x as usize] = new_distance;
