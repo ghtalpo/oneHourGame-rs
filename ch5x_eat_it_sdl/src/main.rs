@@ -403,6 +403,9 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                                 target_position.get_loop_position();
 
+                                new_position = ctx
+                                    .get_chase_position(ctx.characters[i].clone(), target_position);
+                            }
                             _ => {}
                         }
                         ctx.characters[i].last_position = ctx.characters[i].position;
