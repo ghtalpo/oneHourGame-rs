@@ -234,7 +234,14 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
                 _ => {}
             }
         }
+        if ctx.maze[new_position.y as usize]
+            .chars()
+            .nth(new_position.x as usize)
+            .unwrap()
+            != '#'
+        {
         ctx.characters[CharacterEnum::Player as usize].position = new_position;
+        }
 
         ctx.draw_maze();
 
