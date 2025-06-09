@@ -113,8 +113,8 @@ impl Character {
 }
 
 struct Context {
-    maze: Vec<String>,
-    default_maze: Vec<String>,
+    maze: [u8; MAZE_HEIGHT * MAZE_WIDTH],
+    default_maze: [u8; MAZE_HEIGHT * MAZE_WIDTH],
     canvas: Canvas<Window>,
     characters: [Character; CharacterEnum::Max as usize],
     directions: [Vec2; DirectionEnum::Max as usize],
@@ -124,8 +124,10 @@ struct Context {
 
 impl Context {
     pub fn new(canvas: Canvas<Window>) -> Self {
+        let mut default_maze = [0_u8; MAZE_HEIGHT * MAZE_WIDTH];
+
         // [5-2]미로의 초기 상태를 선언한다
-        let default_maze = vec![
+        for (i, v) in vec![
             "#########o#########",
             "#ooooooo#o#ooooooo#",
             "#o###o#o#o#o#o###o#",
@@ -146,12 +148,16 @@ impl Context {
             "#ooooooo#o#ooooooo#",
             "#########o#########",
         ]
-        .iter()
-        .map(|x| x.to_string())
-        .collect();
+        .join("")
+        .to_string()
+        .bytes()
+        .enumerate()
+        {
+            default_maze[i] = v;
+        }
 
         Self {
-            maze: Vec::with_capacity(MAZE_HEIGHT),
+            maze: [0_u8; MAZE_HEIGHT * MAZE_WIDTH],
             default_maze,
             canvas,
             // [5-3]캐릭터의 배열을 선언한다
@@ -221,13 +227,12 @@ impl Context {
             new_position.get_loop_position();
 
             // [6-5-5]대상 좌표에 이동 가능한지 여부를 판정한다
-            let current_block = self.maze[new_position.y as usize]
-                .chars()
-                .nth(new_position.x as usize)
-                .unwrap();
+            let current_block =
+                self.maze[new_position.y as usize * MAZE_WIDTH + new_position.x as usize];
+
             if
             // 벽이 아니다
-            current_block != '#' 
+            current_block != '#' as u8 
             // 그리고 이전 회의 좌표와 같지 않다
             && new_position != character.last_position
             {
@@ -289,11 +294,8 @@ impl Context {
                         < distances[to_check_positions[0].y as usize * MAZE_WIDTH
                             + to_check_positions[0].x as usize])
                              // 그리고 벽이 아니다
-                    && self.maze[new_position.y as usize]
-                        .chars()
-                        .nth(new_position.x as usize)
-                        .unwrap()
-                        != '#'
+                    && self.maze[new_position.y as usize * MAZE_WIDTH + new_position.x as usize]
+                        != '#' as u8
                 {
                     // [6-6-15]대상 좌표까지의 거리를 갱신한다
                     distances[to_check_positions[0].y as usize * MAZE_WIDTH
@@ -351,27 +353,24 @@ impl Context {
         match self.game_state {
             GameStateEnum::Playing => {
                 // [6-7-1]화면 버퍼를 선언한다
-                let mut screen: Vec<String> = Vec::with_capacity(MAZE_HEIGHT);
+                let mut screen = [0_u8; MAZE_HEIGHT * MAZE_WIDTH];
 
                 // [6-7-2]화면 버퍼에 미로를 복사한다
-                // screen.clone_from_slice(&self.maze);
-                for index in 0..MAZE_HEIGHT {
-                    screen.insert(index, self.maze.get(index).unwrap().clone());
-                }
+                screen.clone_from_slice(&self.maze);
 
                 for i in 0..CharacterEnum::Max as usize {
                     // [6-7-4]캐릭터의 번호를 화면 버퍼에 써넣는다
                     let x = self.characters[i].position.x as usize;
                     let y = self.characters[i].position.y as usize;
-                    screen[y].replace_range(x..x + 1, format!("{}", i).as_str());
+                    screen[y * MAZE_WIDTH + x] = i as u8;
                 }
 
                 for y in 0..MAZE_HEIGHT {
                     for x in 0..MAZE_WIDTH {
                         // [6-7-8]칸을 그린다
-                        match screen[y].chars().nth(x) {
-                            Some(' ') => {}
-                            Some('#') => {
+                        match screen[y * MAZE_WIDTH + x] {
+                            val if val == ' ' as u8 => {}
+                            val if val == '#' as u8 => {
                                 self.canvas.set_draw_color(Color::WHITE);
                                 self.canvas
                                     .fill_rect(FRect::new(
@@ -382,7 +381,7 @@ impl Context {
                                     ))
                                     .unwrap();
                             }
-                            Some('o') => {
+                            val if val == 'o' as u8 => {
                                 self.canvas.set_draw_color(Color::RED);
                                 self.canvas
                                     .draw_rect(FRect::new(
@@ -393,23 +392,23 @@ impl Context {
                                     ))
                                     .unwrap();
                             }
-                            Some('0') => {
+                            0 => {
                                 self.canvas.set_draw_color(Color::YELLOW);
                                 self.draw_circle(y, x, 30);
                             }
-                            Some('1') => {
+                            1 => {
                                 self.canvas.set_draw_color(Color::BLUE);
                                 self.draw_circle(y, x, 72);
                             }
-                            Some('2') => {
+                            2 => {
                                 self.canvas.set_draw_color(Color::RED);
                                 self.draw_circle(y, x, 120);
                             }
-                            Some('3') => {
+                            3 => {
                                 self.canvas.set_draw_color(Color::GREEN);
                                 self.draw_circle(y, x, 90);
                             }
-                            Some('4') => {
+                            4 => {
                                 self.canvas.set_draw_color(Color::MAGENTA);
                                 self.draw_circle(y, x, 60);
                             }
@@ -446,11 +445,7 @@ impl Context {
     // [6-8]게임을 초기화하는 함수를 선언한다
     pub fn init(&mut self) {
         // [6-8-1]미로에 초기 상태를 복사한다
-        // self.maze.clone_from_slice(&self.default_maze);
-        for index in 0..MAZE_HEIGHT {
-            self.maze
-                .insert(index, self.default_maze.get(index).unwrap().clone());
-        }
+        self.maze.clone_from_slice(&self.default_maze);
 
         for i in 0..CharacterEnum::Max as usize {
             // [6-8-3]캐릭터의 좌표를 초기화한다
@@ -479,7 +474,7 @@ impl Context {
         for y in 0..MAZE_HEIGHT {
             for x in 0..MAZE_WIDTH {
                 // [6-10-3]대상 칸이 도트인지 여부를 판정한다
-                if self.maze[y].chars().nth(x).unwrap() == 'o' {
+                if self.maze[y * MAZE_WIDTH + x] == 'o' as u8 {
                     // [6-10-4]클리어가 아니라는 결과를 반환한다
                     return false;
                 }
@@ -689,10 +684,8 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
             new_position.get_loop_position();
 
             // [6-11-43]이동 목적지가 벽이 아닌지 여부를 판정한다
-            let current_block = ctx.maze[new_position.y as usize]
-                .chars()
-                .nth(new_position.x as usize)
-                .unwrap();
+            let current_block =
+                ctx.maze[new_position.y as usize * MAZE_WIDTH + new_position.x as usize] as char;
             if current_block != '#' {
                 // [6-11-44]플레이어의 이전 좌표를 현재 좌표로 갱신한다
                 ctx.characters[CharacterEnum::Player as usize].last_position =
@@ -711,7 +704,7 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let y = new_position.y as usize;
                 if current_block == 'o' {
                     // [6-11-49]플레이어 좌표의 도트를 지운다
-                    ctx.maze[y].replace_range(x..x + 1, " ");
+                    ctx.maze[y as usize * MAZE_WIDTH + x as usize] = ' ' as u8;
 
                     // [6-11-50]클리어했는지 여부를 판정한다
                     if ctx.is_complete() {
