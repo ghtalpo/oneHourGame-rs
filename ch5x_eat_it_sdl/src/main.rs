@@ -21,7 +21,8 @@ const INTERVAL: f32 = 1000.0 / FPS as f32; // 밀리 초
 enum CharacterEnum {
     Player = 0,
     Random = 1,
-    Max = 2,
+    Chase = 2,
+    Max = 3,
 }
 
 impl TryFrom<usize> for CharacterEnum {
@@ -129,6 +130,11 @@ impl Context {
                 Character {
                     position: Vec2::default(),
                     default_position: Vec2 { x: 1, y: 1 },
+                    last_position: Vec2::default(),
+                },
+                Character {
+                    position: Vec2::default(),
+                    default_position: Vec2 { x: 17, y: 1 },
                     last_position: Vec2::default(),
                 },
             ],
