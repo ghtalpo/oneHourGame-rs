@@ -1,5 +1,7 @@
 use std::time::{Duration, SystemTime};
 
+use rand::{rngs::ThreadRng, seq::IndexedRandom};
+
 use sdl3::{
     event::Event,
     keyboard::Keycode,
@@ -34,6 +36,14 @@ impl TryFrom<usize> for CharacterEnum {
     }
 }
 
+enum DirectionEnum {
+    Up = 0,
+    Left = 1,
+    Down = 2,
+    Right = 3,
+    Max = 4,
+}
+
 struct Character {
     position: Vec2,
     default_position: Vec2,
@@ -59,6 +69,12 @@ impl Vec2 {
         self.x += other.x;
         self.y += other.y;
     }
+    pub fn add_new(&self, other: &Vec2) -> Vec2 {
+        Vec2 {
+            x: self.x + other.x,
+            y: self.y + other.y,
+        }
+    }
     pub fn get_loop_position(&mut self) {
         self.x = (self.x + MAZE_WIDTH as i8) % (MAZE_WIDTH as i8);
         self.y = (self.y + MAZE_HEIGHT as i8) % (MAZE_HEIGHT as i8);
@@ -70,6 +86,8 @@ struct Context {
     default_maze: Vec<String>,
     canvas: Canvas<Window>,
     characters: [Character; CharacterEnum::Max as usize],
+    directions: [Vec2; DirectionEnum::Max as usize],
+    rng: ThreadRng,
 }
 
 impl Context {
@@ -110,6 +128,13 @@ impl Context {
                     default_position: Vec2 { x: 1, y: 1 },
                 },
             ],
+            directions: [
+                Vec2 { x: 0, y: -1 },
+                Vec2 { x: -1, y: 0 },
+                Vec2 { x: 0, y: 1 },
+                Vec2 { x: 1, y: 0 },
+            ],
+            rng: rand::rng(),
         }
     }
 
@@ -203,6 +228,18 @@ impl Context {
         ));
 
         self.canvas.draw_lines(&points[..]).unwrap();
+    }
+
+    fn get_random_position(&mut self, character: Character) -> Vec2 {
+        let mut positions = Vec::new();
+        for i in 0..DirectionEnum::Max as usize {
+            let mut new_position = character.position.add_new(&self.directions[i]);
+
+            new_position.get_loop_position();
+
+            positions.push(new_position);
+        }
+        *positions.choose(&mut self.rng).unwrap()
     }
 }
 
