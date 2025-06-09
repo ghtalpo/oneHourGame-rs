@@ -3,7 +3,7 @@ use std::time::{Duration, SystemTime};
 use sdl3::{
     event::Event,
     pixels::Color,
-    render::{Canvas, FRect},
+    render::{Canvas, FPoint, FRect},
     video::Window,
 };
 
@@ -105,6 +105,12 @@ impl Context {
             screen.insert(index, self.maze.get(index).unwrap().clone());
         }
 
+        for i in 0..CharacterEnum::Max as usize {
+            let x = self.characters[i].position.x as usize;
+            let y = self.characters[i].position.y as usize;
+            screen[y].replace_range(x..x + 1, format!("{}", i).as_str());
+        }
+
         self.canvas.set_draw_color(Color::RGB(0, 0, 0));
         self.canvas.clear();
 
@@ -134,12 +140,35 @@ impl Context {
                             ))
                             .unwrap();
                     }
+                    Some('0') => {
+                        self.canvas.set_draw_color(Color::YELLOW);
+                        self.draw_circle(y, x, 30);
+                    }
                     _ => {}
                 }
             }
         }
 
         self.canvas.present();
+    }
+
+    fn draw_circle(&mut self, y: usize, x: usize, step: usize) {
+        let mut points = vec![];
+        let r = CELL_SIZE / 2.0;
+        for deg in (0..360).step_by(step) {
+            let rad = (deg as f32) / (180.0) * std::f32::consts::PI;
+            let pt = FPoint::new(
+                x as f32 * CELL_SIZE + r + r * rad.cos(),
+                y as f32 * CELL_SIZE + r + r * rad.sin(),
+            );
+            points.push(pt);
+        }
+        points.push(FPoint::new(
+            x as f32 * CELL_SIZE + 2.0 * r,
+            y as f32 * CELL_SIZE + r,
+        ));
+
+        self.canvas.draw_lines(&points[..]).unwrap();
     }
 }
 
