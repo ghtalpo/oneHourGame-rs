@@ -263,6 +263,65 @@ impl Context {
         }
         *positions.choose(&mut self.rng).unwrap()
     }
+
+    fn get_chase_position(&mut self, character: Character, target_position: Vec2) -> Vec2 {
+        let mut to_check_positions = Vec::new();
+
+        to_check_positions.push(character.position);
+
+        let mut distances = [0_isize; MAZE_HEIGHT * MAZE_WIDTH];
+
+        for y in 0..MAZE_HEIGHT {
+            for x in 0..MAZE_WIDTH {
+                distances[y * MAZE_WIDTH + x] = -1;
+            }
+        }
+
+        distances[character.position.y as usize * MAZE_WIDTH + character.position.x as usize] = 0;
+
+        let mut routes = [const { Vec::new() }; MAZE_WIDTH * MAZE_HEIGHT];
+
+        while !to_check_positions.is_empty() {
+            for i in 0..DirectionEnum::Max as usize {
+                let mut new_position = to_check_positions[0].add_new(&self.directions[i]);
+
+                new_position.get_loop_position();
+
+                let new_distance = distances[to_check_positions[0].y as usize * MAZE_WIDTH
+                    + to_check_positions[0].x as usize]
+                    + 1;
+                if distances[to_check_positions[0].y as usize * MAZE_WIDTH
+                    + to_check_positions[0].x as usize]
+                    < 0
+                    || new_distance
+                        < distances[to_check_positions[0].y as usize * MAZE_WIDTH
+                            + to_check_positions[0].x as usize]
+                {
+                    distances[to_check_positions[0].y as usize * MAZE_WIDTH
+                        + to_check_positions[0].x as usize] = new_distance;
+
+                    to_check_positions.push(new_position);
+
+                    routes[new_position.y as usize * MAZE_WIDTH + new_position.x as usize] = routes
+                        [to_check_positions[0].y as usize * MAZE_WIDTH
+                            + to_check_positions[0].x as usize]
+                        .clone();
+
+                    routes[new_position.y as usize * MAZE_WIDTH + new_position.x as usize]
+                        .push(new_position);
+                }
+            }
+
+            to_check_positions.remove(0);
+        }
+
+        if !routes[target_position.y as usize * MAZE_WIDTH + target_position.x as usize].is_empty()
+        {
+            return routes[target_position.y as usize * MAZE_WIDTH + target_position.x as usize][0];
+        } else {
+            return self.get_random_position(character);
+        }
+    }
 }
 
 pub fn main() -> Result<(), Box<dyn std::error::Error>> {
