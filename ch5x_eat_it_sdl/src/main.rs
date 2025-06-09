@@ -105,34 +105,6 @@ impl Vec2 {
     }
 }
 
-fn get_centered_rect(
-    rect_width: u32,
-    rect_height: u32,
-    cons_width: u32,
-    cons_height: u32,
-) -> FRect {
-    let wr = rect_width as f32 / cons_width as f32;
-    let hr = rect_height as f32 / cons_height as f32;
-
-    let (w, h) = if wr > 1f32 || hr > 1f32 {
-        if wr > hr {
-            println!("Scaling down! The text will look worse!");
-            let h = (rect_height as f32 / wr) as i32;
-            (cons_width as i32, h)
-        } else {
-            println!("Scaling down! The text will look worse!");
-            let w = (rect_width as f32 / hr) as i32;
-            (w, cons_height as i32)
-        }
-    } else {
-        (rect_width as i32, rect_height as i32)
-    };
-
-    let cx = (SCREEN_WIDTH as i32 - w) / 2;
-    let cy = (SCREEN_HEIGHT as i32 - h) / 2;
-    FRect::new(cx as f32, cy as f32, w as f32, h as f32)
-}
-
 struct Context {
     maze: Vec<String>,
     default_maze: Vec<String>,
@@ -292,12 +264,11 @@ impl Context {
         }
 
         if self.game_state == GameStateEnum::GameOver {
-            let padding = 64;
-            let target = get_centered_rect(
-                width,
-                height,
-                SCREEN_WIDTH - padding,
-                SCREEN_HEIGHT - padding,
+            let target = FRect::new(
+                MAZE_WIDTH as f32 * CELL_SIZE as f32,
+                (SCREEN_HEIGHT as f32 - height as f32) / 2.0,
+                width as f32,
+                height as f32,
             );
 
             self.canvas.copy(&texture, None, Some(target)).unwrap();
@@ -437,7 +408,7 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Load a font
     // let mut font = ttf_context.load_font(font_path, 128.0)?;
-    let mut font = ttf_context.load_font("DOSSaemmul.ttf", 16.0)?;
+    let mut font = ttf_context.load_font("DOSSaemmul.ttf", 32.0)?;
     font.set_style(sdl3::ttf::FontStyle::BOLD);
 
     let surface = font
