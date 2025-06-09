@@ -393,6 +393,17 @@ impl Context {
         }
         return false;
     }
+
+    fn is_complete(&self) -> bool {
+        for y in 0..MAZE_HEIGHT {
+            for x in 0..MAZE_WIDTH {
+                if self.maze[y].chars().nth(x).unwrap() == 'o' {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 }
 
 pub fn main() -> Result<(), Box<dyn std::error::Error>> {
