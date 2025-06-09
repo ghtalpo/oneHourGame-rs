@@ -13,6 +13,9 @@ const MAZE_HEIGHT: usize = 19;
 
 const CELL_SIZE: f32 = 32.0;
 
+const FPS: usize = 2;
+const INTERVAL: f32 = 1000.0 / FPS as f32; // 밀리 초 
+
 enum CharacterEnum {
     Player = 0,
     Random = 1,
@@ -211,15 +214,14 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut last_clock = SystemTime::now();
 
     'running: loop {
-        // ctx.wasd = 0;
         match last_clock.elapsed() {
             Ok(elapsed) => {
-                // if (elapsed.as_millis() as f32) >= INTERVAL {
-                //     last_clock = SystemTime::now();
+                if (elapsed.as_millis() as f32) >= INTERVAL {
+                    last_clock = SystemTime::now();
 
-                //     // ctx.fall_block(); // [6-8-8]낙하 블록을 떨어뜨리는 함수를 호출한다
-                //     //                   // continue;
-                // }
+                    // ctx.fall_block(); // [6-8-8]낙하 블록을 떨어뜨리는 함수를 호출한다
+                    //                   // continue;
+                }
             }
             Err(e) => {
                 // an error occurred!
