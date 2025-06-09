@@ -2,6 +2,7 @@ use std::time::{Duration, SystemTime};
 
 use sdl3::{
     event::Event,
+    keyboard::Keycode,
     pixels::Color,
     render::{Canvas, FPoint, FRect},
     video::Window,
@@ -215,6 +216,7 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         }
 
+        let mut new_position = ctx.characters[CharacterEnum::Player as usize].position;
         for event in events.poll_iter() {
             match event {
                 Event::Quit { .. } => break 'running,
@@ -222,15 +224,19 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
                     keycode: Some(keycode),
                     ..
                 } => match keycode {
-                    // Keycode::W => ctx.wasd |= Key::W as u8,
-                    // Keycode::A => ctx.wasd |= Key::A as u8,
-                    // Keycode::S => ctx.wasd |= Key::S as u8,
-                    // Keycode::D => ctx.wasd |= Key::D as u8,
+                    Keycode::W => new_position.y -= 1,
+                    Keycode::S => new_position.y += 1,
+                    Keycode::A => new_position.x -= 1,
+                    Keycode::D => new_position.x += 1,
+                    Keycode::Escape => std::process::exit(0),
                     _ => {}
                 },
                 _ => {}
             }
         }
+        ctx.characters[CharacterEnum::Player as usize].position = new_position;
+
+        ctx.draw_maze();
 
         std::thread::sleep(Duration::from_millis(100));
     }
