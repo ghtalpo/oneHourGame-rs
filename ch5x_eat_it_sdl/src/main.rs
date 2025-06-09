@@ -6,9 +6,12 @@ use sdl3::{
     event::Event,
     keyboard::Keycode,
     pixels::Color,
-    render::{Canvas, FPoint, FRect},
+    render::{Canvas, FPoint, FRect, TextureQuery},
     video::Window,
 };
+
+const SCREEN_WIDTH: u32 = 800;
+const SCREEN_HEIGHT: u32 = 600;
 
 const MAZE_WIDTH: usize = 19;
 const MAZE_HEIGHT: usize = 19;
@@ -50,6 +53,12 @@ enum DirectionEnum {
     Max = 4,
 }
 
+#[derive(PartialEq)]
+enum GameStateEnum {
+    Playing = 0,
+    GameOver = 1,
+}
+
 #[derive(Clone, Copy)]
 struct Character {
     position: Vec2,
@@ -67,7 +76,7 @@ impl Character {
     }
 }
 
-#[derive(Clone, Copy, Default, PartialEq)]
+#[derive(Clone, Copy, Default, PartialEq, Debug)]
 struct Vec2 {
     x: i8,
     y: i8,
@@ -96,6 +105,34 @@ impl Vec2 {
     }
 }
 
+fn get_centered_rect(
+    rect_width: u32,
+    rect_height: u32,
+    cons_width: u32,
+    cons_height: u32,
+) -> FRect {
+    let wr = rect_width as f32 / cons_width as f32;
+    let hr = rect_height as f32 / cons_height as f32;
+
+    let (w, h) = if wr > 1f32 || hr > 1f32 {
+        if wr > hr {
+            println!("Scaling down! The text will look worse!");
+            let h = (rect_height as f32 / wr) as i32;
+            (cons_width as i32, h)
+        } else {
+            println!("Scaling down! The text will look worse!");
+            let w = (rect_width as f32 / hr) as i32;
+            (w, cons_height as i32)
+        }
+    } else {
+        (rect_width as i32, rect_height as i32)
+    };
+
+    let cx = (SCREEN_WIDTH as i32 - w) / 2;
+    let cy = (SCREEN_HEIGHT as i32 - h) / 2;
+    FRect::new(cx as f32, cy as f32, w as f32, h as f32)
+}
+
 struct Context {
     maze: Vec<String>,
     default_maze: Vec<String>,
@@ -103,6 +140,7 @@ struct Context {
     characters: [Character; CharacterEnum::Max as usize],
     directions: [Vec2; DirectionEnum::Max as usize],
     rng: ThreadRng,
+    game_state: GameStateEnum,
 }
 
 impl Context {
@@ -166,6 +204,7 @@ impl Context {
                 Vec2 { x: 1, y: 0 },
             ],
             rng: rand::rng(),
+            game_state: GameStateEnum::Playing,
         }
     }
 
@@ -181,10 +220,10 @@ impl Context {
             self.characters[i].last_position = self.characters[i].default_position;
         }
 
-        self.draw_maze();
+        // self.draw_maze();
     }
 
-    pub fn draw_maze(&mut self) {
+    pub fn draw_maze(&mut self, width: u32, height: u32, texture: &sdl3::render::Texture<'_>) {
         let mut screen: Vec<String> = Vec::with_capacity(MAZE_HEIGHT);
 
         // screen.clone_from_slice(&self.maze);
@@ -250,6 +289,18 @@ impl Context {
                     _ => {}
                 }
             }
+        }
+
+        if self.game_state == GameStateEnum::GameOver {
+            let padding = 64;
+            let target = get_centered_rect(
+                width,
+                height,
+                SCREEN_WIDTH - padding,
+                SCREEN_HEIGHT - padding,
+            );
+
+            self.canvas.copy(&texture, None, Some(target)).unwrap();
         }
 
         self.canvas.present();
@@ -357,19 +408,46 @@ impl Context {
             return self.get_random_position(character);
         }
     }
+
+    fn is_game_over(&self) -> bool {
+        for i in CharacterEnum::Player as usize + 1..CharacterEnum::Max as usize {
+            if self.characters[i].position
+                == self.characters[CharacterEnum::Player as usize].position
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 }
 
 pub fn main() -> Result<(), Box<dyn std::error::Error>> {
     let sdl_context = sdl3::init()?;
     let video_subsystem = sdl_context.video()?;
+    let ttf_context = sdl3::ttf::init().map_err(|e| e.to_string())?;
 
     let window = video_subsystem
-        .window("Keyboard", 800, 600)
+        .window("Keyboard", SCREEN_WIDTH, SCREEN_HEIGHT)
         .position_centered()
         .build()
         .map_err(|e| e.to_string())?;
 
     let mut canvas = window.into_canvas();
+    let texture_creator = canvas.texture_creator();
+
+    // Load a font
+    // let mut font = ttf_context.load_font(font_path, 128.0)?;
+    let mut font = ttf_context.load_font("DOSSaemmul.ttf", 16.0)?;
+    font.set_style(sdl3::ttf::FontStyle::BOLD);
+
+    let surface = font
+        .render("GAME OVER")
+        .blended(Color::WHITE)
+        .map_err(|e| e.to_string())?;
+    let texture = texture_creator
+        .create_texture_from_surface(&surface)
+        .map_err(|e| e.to_string())?;
+    let TextureQuery { width, height, .. } = texture.query();
 
     let mut events = sdl_context.event_pump()?;
 
@@ -379,131 +457,158 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut last_clock = SystemTime::now();
 
     'running: loop {
-        match last_clock.elapsed() {
-            Ok(elapsed) => {
-                if (elapsed.as_millis() as f32) >= INTERVAL {
-                    last_clock = SystemTime::now();
+        if ctx.game_state == GameStateEnum::Playing {
+            match last_clock.elapsed() {
+                Ok(elapsed) => {
+                    if (elapsed.as_millis() as f32) >= INTERVAL {
+                        last_clock = SystemTime::now();
 
-                    for i in CharacterEnum::Player as usize + 1..CharacterEnum::Max as usize {
-                        let mut new_position = ctx.characters[i].position;
-                        match CharacterEnum::try_from(i).unwrap() {
-                            CharacterEnum::Random => {
-                                new_position = ctx.get_random_position(ctx.characters[i].clone());
-                            }
-                            CharacterEnum::Chase => {
-                                new_position = ctx.get_chase_position(
-                                    ctx.characters[i].clone(),
-                                    ctx.characters[CharacterEnum::Player as usize].position,
-                                );
-                            }
-                            CharacterEnum::Ambush => {
-                                let player_direction = ctx.characters
-                                    [CharacterEnum::Player as usize]
-                                    .position
-                                    .subtract_new(
-                                        &ctx.characters[CharacterEnum::Player as usize]
-                                            .last_position,
-                                    );
-
-                                let mut target_position =
-                                    ctx.characters[CharacterEnum::Player as usize].position;
-
-                                for _ in 0..3 {
-                                    target_position.add(&player_direction);
+                        for i in CharacterEnum::Player as usize + 1..CharacterEnum::Max as usize {
+                            let mut new_position = ctx.characters[i].position;
+                            match CharacterEnum::try_from(i).unwrap() {
+                                CharacterEnum::Random => {
+                                    new_position =
+                                        ctx.get_random_position(ctx.characters[i].clone());
                                 }
-
-                                target_position.get_loop_position();
-
-                                new_position = ctx
-                                    .get_chase_position(ctx.characters[i].clone(), target_position);
-                            }
-                            CharacterEnum::Siege => {
-                                let chase_to_player = ctx.characters
-                                    [CharacterEnum::Player as usize]
-                                    .position
-                                    .subtract_new(
-                                        &ctx.characters[CharacterEnum::Chase as usize].position,
+                                CharacterEnum::Chase => {
+                                    new_position = ctx.get_chase_position(
+                                        ctx.characters[i].clone(),
+                                        ctx.characters[CharacterEnum::Player as usize].position,
                                     );
+                                }
+                                CharacterEnum::Ambush => {
+                                    let player_direction = ctx.characters
+                                        [CharacterEnum::Player as usize]
+                                        .position
+                                        .subtract_new(
+                                            &ctx.characters[CharacterEnum::Player as usize]
+                                                .last_position,
+                                        );
 
-                                let mut target_position = ctx.characters
-                                    [CharacterEnum::Player as usize]
-                                    .position
-                                    .add_new(&chase_to_player);
+                                    let mut target_position =
+                                        ctx.characters[CharacterEnum::Player as usize].position;
 
-                                target_position.get_loop_position();
+                                    for _ in 0..3 {
+                                        target_position.add(&player_direction);
+                                    }
 
-                                new_position = ctx
-                                    .get_chase_position(ctx.characters[i].clone(), target_position);
+                                    target_position.get_loop_position();
+
+                                    new_position = ctx.get_chase_position(
+                                        ctx.characters[i].clone(),
+                                        target_position,
+                                    );
+                                }
+                                CharacterEnum::Siege => {
+                                    let chase_to_player = ctx.characters
+                                        [CharacterEnum::Player as usize]
+                                        .position
+                                        .subtract_new(
+                                            &ctx.characters[CharacterEnum::Chase as usize].position,
+                                        );
+
+                                    let mut target_position = ctx.characters
+                                        [CharacterEnum::Player as usize]
+                                        .position
+                                        .add_new(&chase_to_player);
+
+                                    target_position.get_loop_position();
+
+                                    new_position = ctx.get_chase_position(
+                                        ctx.characters[i].clone(),
+                                        target_position,
+                                    );
+                                }
+                                _ => {}
                             }
-                            _ => {}
+                            ctx.characters[i].last_position = ctx.characters[i].position;
+                            ctx.characters[i].position = new_position;
                         }
-                        ctx.characters[i].last_position = ctx.characters[i].position;
-                        ctx.characters[i].position = new_position;
                     }
                 }
+                Err(e) => {
+                    // an error occurred!
+                    println!("Error: {e:?}");
+                    std::process::exit(0);
+                }
             }
-            Err(e) => {
-                // an error occurred!
-                println!("Error: {e:?}");
-                std::process::exit(0);
-            }
-        }
 
-        let mut new_position = ctx.characters[CharacterEnum::Player as usize].position;
-        let mut key_up = false;
-        let mut key_down = false;
-        let mut key_left = false;
-        let mut key_right = false;
-        for event in events.poll_iter() {
-            match event {
-                Event::Quit { .. } => break 'running,
-                Event::KeyDown {
-                    keycode: Some(keycode),
-                    ..
-                } => match keycode {
-                    Keycode::W => key_up = true,
-                    Keycode::S => key_down = true,
-                    Keycode::A => key_left = true,
-                    Keycode::D => key_right = true,
-                    Keycode::Escape => std::process::exit(0),
+            let mut new_position = ctx.characters[CharacterEnum::Player as usize].position;
+            let mut key_up = false;
+            let mut key_down = false;
+            let mut key_left = false;
+            let mut key_right = false;
+            for event in events.poll_iter() {
+                match event {
+                    Event::Quit { .. } => break 'running,
+                    Event::KeyDown {
+                        keycode: Some(keycode),
+                        ..
+                    } => match keycode {
+                        Keycode::W => key_up = true,
+                        Keycode::S => key_down = true,
+                        Keycode::A => key_left = true,
+                        Keycode::D => key_right = true,
+                        Keycode::Escape => std::process::exit(0),
+                        _ => {}
+                    },
                     _ => {}
-                },
-                _ => {}
+                }
+            }
+
+            if key_up {
+                new_position.y -= 1;
+            }
+            if key_down {
+                new_position.y += 1;
+            }
+            if key_left {
+                new_position.x -= 1;
+            }
+            if key_right {
+                new_position.x += 1;
+            }
+
+            new_position.get_loop_position();
+
+            let current_block = ctx.maze[new_position.y as usize]
+                .chars()
+                .nth(new_position.x as usize)
+                .unwrap();
+            if current_block != '#' {
+                ctx.characters[CharacterEnum::Player as usize].last_position =
+                    ctx.characters[CharacterEnum::Player as usize].position;
+
+                if ctx.is_game_over() {
+                    ctx.game_state = GameStateEnum::GameOver;
+                }
+
+                let x = new_position.x as usize;
+                let y = new_position.y as usize;
+                if current_block == 'o' {
+                    ctx.maze[y].replace_range(x..x + 1, " ");
+                }
+                ctx.characters[CharacterEnum::Player as usize].position = new_position;
             }
         }
-
-        if key_up {
-            new_position.y -= 1;
-        }
-        if key_down {
-            new_position.y += 1;
-        }
-        if key_left {
-            new_position.x -= 1;
-        }
-        if key_right {
-            new_position.x += 1;
-        }
-
-        new_position.get_loop_position();
-
-        let current_block = ctx.maze[new_position.y as usize]
-            .chars()
-            .nth(new_position.x as usize)
-            .unwrap();
-        if current_block != '#' {
-            ctx.characters[CharacterEnum::Player as usize].last_position =
-                ctx.characters[CharacterEnum::Player as usize].position;
-
-            let x = new_position.x as usize;
-            let y = new_position.y as usize;
-            if current_block == 'o' {
-                ctx.maze[y].replace_range(x..x + 1, " ");
+        if ctx.game_state == GameStateEnum::GameOver {
+            for event in events.poll_iter() {
+                match event {
+                    Event::Quit { .. } => break 'running,
+                    Event::KeyDown {
+                        keycode: Some(keycode),
+                        ..
+                    } => match keycode {
+                        Keycode::Escape => std::process::exit(0),
+                        _ => {
+                            ctx.game_state = GameStateEnum::Playing;
+                        }
+                    },
+                    _ => {}
+                }
             }
-            ctx.characters[CharacterEnum::Player as usize].position = new_position;
         }
-
-        ctx.draw_maze();
+        ctx.draw_maze(width, height, &texture);
 
         std::thread::sleep(Duration::from_millis(100));
     }
