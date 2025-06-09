@@ -196,82 +196,85 @@ impl Context {
     }
 
     pub fn draw_maze(&mut self, width: u32, height: u32, texture: &sdl3::render::Texture<'_>) {
-        let mut screen: Vec<String> = Vec::with_capacity(MAZE_HEIGHT);
-
-        // screen.clone_from_slice(&self.maze);
-        for index in 0..MAZE_HEIGHT {
-            screen.insert(index, self.maze.get(index).unwrap().clone());
-        }
-
-        for i in 0..CharacterEnum::Max as usize {
-            let x = self.characters[i].position.x as usize;
-            let y = self.characters[i].position.y as usize;
-            screen[y].replace_range(x..x + 1, format!("{}", i).as_str());
-        }
-
         self.canvas.set_draw_color(Color::RGB(0, 0, 0));
         self.canvas.clear();
 
-        for y in 0..MAZE_HEIGHT {
-            for x in 0..MAZE_WIDTH {
-                match screen[y].chars().nth(x) {
-                    Some(' ') => {}
-                    Some('#') => {
-                        self.canvas.set_draw_color(Color::WHITE);
-                        self.canvas
-                            .fill_rect(FRect::new(
-                                x as f32 * CELL_SIZE,
-                                y as f32 * CELL_SIZE,
-                                CELL_SIZE,
-                                CELL_SIZE,
-                            ))
-                            .unwrap();
+        match self.game_state {
+            GameStateEnum::Playing => {
+                let mut screen: Vec<String> = Vec::with_capacity(MAZE_HEIGHT);
+
+                // screen.clone_from_slice(&self.maze);
+                for index in 0..MAZE_HEIGHT {
+                    screen.insert(index, self.maze.get(index).unwrap().clone());
+                }
+
+                for i in 0..CharacterEnum::Max as usize {
+                    let x = self.characters[i].position.x as usize;
+                    let y = self.characters[i].position.y as usize;
+                    screen[y].replace_range(x..x + 1, format!("{}", i).as_str());
+                }
+
+                for y in 0..MAZE_HEIGHT {
+                    for x in 0..MAZE_WIDTH {
+                        match screen[y].chars().nth(x) {
+                            Some(' ') => {}
+                            Some('#') => {
+                                self.canvas.set_draw_color(Color::WHITE);
+                                self.canvas
+                                    .fill_rect(FRect::new(
+                                        x as f32 * CELL_SIZE,
+                                        y as f32 * CELL_SIZE,
+                                        CELL_SIZE,
+                                        CELL_SIZE,
+                                    ))
+                                    .unwrap();
+                            }
+                            Some('o') => {
+                                self.canvas.set_draw_color(Color::RED);
+                                self.canvas
+                                    .draw_rect(FRect::new(
+                                        x as f32 * CELL_SIZE + CELL_SIZE / 2.0,
+                                        y as f32 * CELL_SIZE + CELL_SIZE / 2.0,
+                                        3.0,
+                                        3.0,
+                                    ))
+                                    .unwrap();
+                            }
+                            Some('0') => {
+                                self.canvas.set_draw_color(Color::YELLOW);
+                                self.draw_circle(y, x, 30);
+                            }
+                            Some('1') => {
+                                self.canvas.set_draw_color(Color::BLUE);
+                                self.draw_circle(y, x, 72);
+                            }
+                            Some('2') => {
+                                self.canvas.set_draw_color(Color::RED);
+                                self.draw_circle(y, x, 120);
+                            }
+                            Some('3') => {
+                                self.canvas.set_draw_color(Color::GREEN);
+                                self.draw_circle(y, x, 90);
+                            }
+                            Some('4') => {
+                                self.canvas.set_draw_color(Color::MAGENTA);
+                                self.draw_circle(y, x, 60);
+                            }
+                            _ => {}
+                        }
                     }
-                    Some('o') => {
-                        self.canvas.set_draw_color(Color::RED);
-                        self.canvas
-                            .draw_rect(FRect::new(
-                                x as f32 * CELL_SIZE + CELL_SIZE / 2.0,
-                                y as f32 * CELL_SIZE + CELL_SIZE / 2.0,
-                                3.0,
-                                3.0,
-                            ))
-                            .unwrap();
-                    }
-                    Some('0') => {
-                        self.canvas.set_draw_color(Color::YELLOW);
-                        self.draw_circle(y, x, 30);
-                    }
-                    Some('1') => {
-                        self.canvas.set_draw_color(Color::BLUE);
-                        self.draw_circle(y, x, 72);
-                    }
-                    Some('2') => {
-                        self.canvas.set_draw_color(Color::RED);
-                        self.draw_circle(y, x, 120);
-                    }
-                    Some('3') => {
-                        self.canvas.set_draw_color(Color::GREEN);
-                        self.draw_circle(y, x, 90);
-                    }
-                    Some('4') => {
-                        self.canvas.set_draw_color(Color::MAGENTA);
-                        self.draw_circle(y, x, 60);
-                    }
-                    _ => {}
                 }
             }
-        }
+            GameStateEnum::GameOver => {
+                let target = FRect::new(
+                    (SCREEN_WIDTH as f32 - width as f32) / 2.0,
+                    (SCREEN_HEIGHT as f32 - height as f32) / 2.0,
+                    width as f32,
+                    height as f32,
+                );
 
-        if self.game_state == GameStateEnum::GameOver {
-            let target = FRect::new(
-                MAZE_WIDTH as f32 * CELL_SIZE as f32,
-                (SCREEN_HEIGHT as f32 - height as f32) / 2.0,
-                width as f32,
-                height as f32,
-            );
-
-            self.canvas.copy(&texture, None, Some(target)).unwrap();
+                self.canvas.copy(&texture, None, Some(target)).unwrap();
+            }
         }
 
         self.canvas.present();
