@@ -230,11 +230,11 @@ impl Context {
             let current_block =
                 self.maze[new_position.y as usize * MAZE_WIDTH + new_position.x as usize];
 
-            if
-            // 벽이 아니다
-            current_block != '#' as u8 
+            if current_block != b'#'    &&          // 벽이 아니다
+
             // 그리고 이전 회의 좌표와 같지 않다
-            && new_position != character.last_position
+
+            new_position != character.last_position
             {
                 // [6-5-6]대상 좌표를 이동 목적지의 후보 리스트에 추가한다
                 positions.push(new_position);
@@ -295,7 +295,7 @@ impl Context {
                             + to_check_positions[0].x as usize])
                              // 그리고 벽이 아니다
                     && self.maze[new_position.y as usize * MAZE_WIDTH + new_position.x as usize]
-                        != '#' as u8
+                        != b'#'
                 {
                     // [6-6-15]대상 좌표까지의 거리를 갱신한다
                     distances[to_check_positions[0].y as usize * MAZE_WIDTH
@@ -369,8 +369,8 @@ impl Context {
                     for x in 0..MAZE_WIDTH {
                         // [6-7-8]칸을 그린다
                         match screen[y * MAZE_WIDTH + x] {
-                            val if val == ' ' as u8 => {}
-                            val if val == '#' as u8 => {
+                            b' ' => {}
+                            b'#' => {
                                 self.canvas.set_draw_color(Color::WHITE);
                                 self.canvas
                                     .fill_rect(FRect::new(
@@ -381,7 +381,7 @@ impl Context {
                                     ))
                                     .unwrap();
                             }
-                            val if val == 'o' as u8 => {
+                            b'o' => {
                                 self.canvas.set_draw_color(Color::RED);
                                 self.canvas
                                     .fill_rect(FRect::new(
@@ -474,7 +474,7 @@ impl Context {
         for y in 0..MAZE_HEIGHT {
             for x in 0..MAZE_WIDTH {
                 // [6-10-3]대상 칸이 도트인지 여부를 판정한다
-                if self.maze[y * MAZE_WIDTH + x] == 'o' as u8 {
+                if self.maze[y * MAZE_WIDTH + x] == b'o' {
                     // [6-10-4]클리어가 아니라는 결과를 반환한다
                     return false;
                 }
@@ -537,197 +537,202 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut last_clock = SystemTime::now();
 
     'running: loop {
-        if ctx.game_state == GameStateEnum::Playing {
-            match last_clock.elapsed() {
-                Ok(elapsed) => {
-                    // [6-11-9]이전 회의 갱신으로부터 대기 시간이 경과했는지 여부를 판정한다
-                    if (elapsed.as_millis() as f32) >= INTERVAL {
-                        // [6-11-10]이전 회의 갱신 시각을 현재 시각으로 갱신한다
-                        last_clock = SystemTime::now();
+        match ctx.game_state {
+            GameStateEnum::Playing => {
+                match last_clock.elapsed() {
+                    Ok(elapsed) => {
+                        // [6-11-9]이전 회의 갱신으로부터 대기 시간이 경과했는지 여부를 판정한다
+                        if (elapsed.as_millis() as f32) >= INTERVAL {
+                            // [6-11-10]이전 회의 갱신 시각을 현재 시각으로 갱신한다
+                            last_clock = SystemTime::now();
 
-                        for i in CharacterEnum::Player as usize + 1..CharacterEnum::Max as usize {
-                            // [6-11-12]이동 목적지의 좌표를 선언한다
-                            let mut new_position = ctx.characters[i].position;
+                            for i in CharacterEnum::Player as usize + 1..CharacterEnum::Max as usize
+                            {
+                                // [6-11-12]이동 목적지의 좌표를 선언한다
+                                let mut new_position = ctx.characters[i].position;
 
-                            match CharacterEnum::try_from(i).unwrap() {
-                                CharacterEnum::Random => {
-                                    // [6-11-14]변덕 몬스터
+                                match CharacterEnum::try_from(i).unwrap() {
+                                    CharacterEnum::Random => {
+                                        // [6-11-14]변덕 몬스터
 
-                                    // [6-11-15]랜덤한 이동 목적지의 좌표를 설정한다
-                                    new_position = ctx.get_random_position(ctx.characters[i]);
-                                }
-                                CharacterEnum::Chase => {
-                                    // [6-11-16]추적 몬스터
-
-                                    // [6-11-17]플레이어를 추적하는 좌표를 설정한다
-                                    new_position = ctx.get_chase_position(
-                                        ctx.characters[i],
-                                        ctx.characters[CharacterEnum::Player as usize].position,
-                                    );
-                                }
-                                CharacterEnum::Ambush => {
-                                    // [6-11-18]전진 몬스터
-
-                                    // [6-11-19]플레이어의 방향 벡터를 선언한다
-                                    let player_direction = ctx.characters
-                                        [CharacterEnum::Player as usize]
-                                        .position
-                                        .subtract_new(
-                                            &ctx.characters[CharacterEnum::Player as usize]
-                                                .last_position,
-                                        );
-
-                                    // [6-11-20]목표 지점을 선언한다
-                                    let mut target_position =
-                                        ctx.characters[CharacterEnum::Player as usize].position;
-
-                                    // [6-11-21]3회 반복한다
-                                    for _ in 0..3 {
-                                        // [6-11-22]목표 지점에 플레이어의 방향 벡터를 더한다
-                                        target_position.add(&player_direction);
+                                        // [6-11-15]랜덤한 이동 목적지의 좌표를 설정한다
+                                        new_position = ctx.get_random_position(ctx.characters[i]);
                                     }
+                                    CharacterEnum::Chase => {
+                                        // [6-11-16]추적 몬스터
 
-                                    // [6-11-23]목표 지점을 상하좌우로 루프시킨 좌표로 변환한다
-                                    target_position.get_loop_position();
-
-                                    // [6-11-24]목표 지점을 목표로 하는 좌표를 설정한다
-                                    new_position =
-                                        ctx.get_chase_position(ctx.characters[i], target_position);
-                                }
-                                CharacterEnum::Siege => {
-                                    // [6-11-25]협공 몬스터
-
-                                    // [6-11-26]추적 몬스터에서 플레이어까지의 벡터를 얻는다
-                                    let chase_to_player = ctx.characters
-                                        [CharacterEnum::Player as usize]
-                                        .position
-                                        .subtract_new(
-                                            &ctx.characters[CharacterEnum::Chase as usize].position,
+                                        // [6-11-17]플레이어를 추적하는 좌표를 설정한다
+                                        new_position = ctx.get_chase_position(
+                                            ctx.characters[i],
+                                            ctx.characters[CharacterEnum::Player as usize].position,
                                         );
+                                    }
+                                    CharacterEnum::Ambush => {
+                                        // [6-11-18]전진 몬스터
 
-                                    // [6-11-27]목적지를 선언한다
-                                    let mut target_position = ctx.characters
-                                        [CharacterEnum::Player as usize]
-                                        .position
-                                        .add_new(&chase_to_player);
+                                        // [6-11-19]플레이어의 방향 벡터를 선언한다
+                                        let player_direction = ctx.characters
+                                            [CharacterEnum::Player as usize]
+                                            .position
+                                            .subtract_new(
+                                                &ctx.characters[CharacterEnum::Player as usize]
+                                                    .last_position,
+                                            );
 
-                                    target_position.get_loop_position();
+                                        // [6-11-20]목표 지점을 선언한다
+                                        let mut target_position =
+                                            ctx.characters[CharacterEnum::Player as usize].position;
 
-                                    // [6-11-29]목표 지점을 목표로 하는 좌표를 설정한다
-                                    new_position =
-                                        ctx.get_chase_position(ctx.characters[i], target_position);
+                                        // [6-11-21]3회 반복한다
+                                        for _ in 0..3 {
+                                            // [6-11-22]목표 지점에 플레이어의 방향 벡터를 더한다
+                                            target_position.add(&player_direction);
+                                        }
+
+                                        // [6-11-23]목표 지점을 상하좌우로 루프시킨 좌표로 변환한다
+                                        target_position.get_loop_position();
+
+                                        // [6-11-24]목표 지점을 목표로 하는 좌표를 설정한다
+                                        new_position = ctx
+                                            .get_chase_position(ctx.characters[i], target_position);
+                                    }
+                                    CharacterEnum::Siege => {
+                                        // [6-11-25]협공 몬스터
+
+                                        // [6-11-26]추적 몬스터에서 플레이어까지의 벡터를 얻는다
+                                        let chase_to_player = ctx.characters
+                                            [CharacterEnum::Player as usize]
+                                            .position
+                                            .subtract_new(
+                                                &ctx.characters[CharacterEnum::Chase as usize]
+                                                    .position,
+                                            );
+
+                                        // [6-11-27]목적지를 선언한다
+                                        let mut target_position = ctx.characters
+                                            [CharacterEnum::Player as usize]
+                                            .position
+                                            .add_new(&chase_to_player);
+
+                                        target_position.get_loop_position();
+
+                                        // [6-11-29]목표 지점을 목표로 하는 좌표를 설정한다
+                                        new_position = ctx
+                                            .get_chase_position(ctx.characters[i], target_position);
+                                    }
+                                    _ => {}
                                 }
-                                _ => {}
+
+                                // [6-11-30]이전 회의 좌표를 현재 좌표로 갱신한다
+                                ctx.characters[i].last_position = ctx.characters[i].position;
+
+                                // [6-11-31]이동 목적지로 이동시킨다
+                                ctx.characters[i].position = new_position;
                             }
 
-                            // [6-11-30]이전 회의 좌표를 현재 좌표로 갱신한다
-                            ctx.characters[i].last_position = ctx.characters[i].position;
-
-                            // [6-11-31]이동 목적지로 이동시킨다
-                            ctx.characters[i].position = new_position;
-                        }
-
-                        // [6-11-32]게임 오버가 되었는지 여부를 판정한다
-                        if ctx.is_game_over() {
-                            ctx.game_state = GameStateEnum::GameOver;
-                            continue;
+                            // [6-11-32]게임 오버가 되었는지 여부를 판정한다
+                            if ctx.is_game_over() {
+                                ctx.game_state = GameStateEnum::GameOver;
+                                continue;
+                            }
                         }
                     }
+                    Err(e) => {
+                        // an error occurred!
+                        println!("Error: {e:?}");
+                        std::process::exit(0);
+                    }
                 }
-                Err(e) => {
-                    // an error occurred!
-                    println!("Error: {e:?}");
-                    std::process::exit(0);
-                }
-            }
 
-            // [6-11-36]플레이어의 새로운 좌표를 선언한다
-            let mut new_position = ctx.characters[CharacterEnum::Player as usize].position;
+                // [6-11-36]플레이어의 새로운 좌표를 선언한다
+                let mut new_position = ctx.characters[CharacterEnum::Player as usize].position;
 
-            // [6-11-37]입력된 키에 따라 분기한다
-            let mut key_up = false;
-            let mut key_down = false;
-            let mut key_left = false;
-            let mut key_right = false;
-            for event in events.poll_iter() {
-                match event {
-                    Event::Quit { .. } => break 'running,
-                    Event::KeyDown {
-                        keycode: Some(keycode),
-                        ..
-                    } => match keycode {
-                        Keycode::W => key_up = true,
-                        Keycode::S => key_down = true,
-                        Keycode::A => key_left = true,
-                        Keycode::D => key_right = true,
-                        Keycode::Escape => std::process::exit(0),
+                // [6-11-37]입력된 키에 따라 분기한다
+                let mut key_up = false;
+                let mut key_down = false;
+                let mut key_left = false;
+                let mut key_right = false;
+                for event in events.poll_iter() {
+                    match event {
+                        Event::Quit { .. } => break 'running,
+                        Event::KeyDown {
+                            keycode: Some(keycode),
+                            ..
+                        } => match keycode {
+                            Keycode::W => key_up = true,
+                            Keycode::S => key_down = true,
+                            Keycode::A => key_left = true,
+                            Keycode::D => key_right = true,
+                            Keycode::Escape => std::process::exit(0),
+                            _ => {}
+                        },
                         _ => {}
-                    },
-                    _ => {}
-                }
-            }
-
-            if key_up {
-                new_position.y -= 1;
-            }
-            if key_down {
-                new_position.y += 1;
-            }
-            if key_left {
-                new_position.x -= 1;
-            }
-            if key_right {
-                new_position.x += 1;
-            }
-
-            // [6-11-42]이동 목적지의 좌표를 상하좌우로 이동시킨다
-            new_position.get_loop_position();
-
-            // [6-11-43]이동 목적지가 벽이 아닌지 여부를 판정한다
-            let current_block =
-                ctx.maze[new_position.y as usize * MAZE_WIDTH + new_position.x as usize] as char;
-            if current_block != '#' {
-                // [6-11-44]플레이어의 이전 좌표를 현재 좌표로 갱신한다
-                ctx.characters[CharacterEnum::Player as usize].last_position =
-                    ctx.characters[CharacterEnum::Player as usize].position;
-
-                // [6-11-45]플레이어의 좌표를 갱신한다
-                ctx.characters[CharacterEnum::Player as usize].position = new_position;
-
-                // [6-11-46]게임 오버가 되었는지 여부를 판정한다
-                if ctx.is_game_over() {
-                    ctx.game_state = GameStateEnum::GameOver;
+                    }
                 }
 
-                // [6-11-48]플레이어의 좌표에 도트가 있는지 여부를 판정한다
-                let x = new_position.x as usize;
-                let y = new_position.y as usize;
-                if current_block == 'o' {
-                    // [6-11-49]플레이어 좌표의 도트를 지운다
-                    ctx.maze[y as usize * MAZE_WIDTH + x as usize] = ' ' as u8;
+                if key_up {
+                    new_position.y -= 1;
+                }
+                if key_down {
+                    new_position.y += 1;
+                }
+                if key_left {
+                    new_position.x -= 1;
+                }
+                if key_right {
+                    new_position.x += 1;
+                }
 
-                    // [6-11-50]클리어했는지 여부를 판정한다
-                    if ctx.is_complete() {
-                        ctx.game_state = GameStateEnum::GameEnd;
+                // [6-11-42]이동 목적지의 좌표를 상하좌우로 이동시킨다
+                new_position.get_loop_position();
+
+                // [6-11-43]이동 목적지가 벽이 아닌지 여부를 판정한다
+                let current_block = ctx.maze
+                    [new_position.y as usize * MAZE_WIDTH + new_position.x as usize]
+                    as char;
+                if current_block != '#' {
+                    // [6-11-44]플레이어의 이전 좌표를 현재 좌표로 갱신한다
+                    ctx.characters[CharacterEnum::Player as usize].last_position =
+                        ctx.characters[CharacterEnum::Player as usize].position;
+
+                    // [6-11-45]플레이어의 좌표를 갱신한다
+                    ctx.characters[CharacterEnum::Player as usize].position = new_position;
+
+                    // [6-11-46]게임 오버가 되었는지 여부를 판정한다
+                    if ctx.is_game_over() {
+                        ctx.game_state = GameStateEnum::GameOver;
+                    }
+
+                    // [6-11-48]플레이어의 좌표에 도트가 있는지 여부를 판정한다
+                    let x = new_position.x as usize;
+                    let y = new_position.y as usize;
+                    if current_block == 'o' {
+                        // [6-11-49]플레이어 좌표의 도트를 지운다
+                        ctx.maze[y as usize * MAZE_WIDTH + x as usize] = b' ';
+
+                        // [6-11-50]클리어했는지 여부를 판정한다
+                        if ctx.is_complete() {
+                            ctx.game_state = GameStateEnum::GameEnd;
+                        }
                     }
                 }
             }
-        }
-        if ctx.game_state == GameStateEnum::GameOver || ctx.game_state == GameStateEnum::GameEnd {
-            for event in events.poll_iter() {
-                match event {
-                    Event::Quit { .. } => break 'running,
-                    Event::KeyDown {
-                        keycode: Some(keycode),
-                        ..
-                    } => match keycode {
-                        Keycode::Escape => std::process::exit(0),
-                        _ => {
-                            ctx.game_state = GameStateEnum::Playing;
-                            ctx.init();
-                        }
-                    },
-                    _ => {}
+            GameStateEnum::GameEnd | GameStateEnum::GameOver => {
+                for event in events.poll_iter() {
+                    match event {
+                        Event::Quit { .. } => break 'running,
+                        Event::KeyDown {
+                            keycode: Some(keycode),
+                            ..
+                        } => match keycode {
+                            Keycode::Escape => std::process::exit(0),
+                            _ => {
+                                ctx.game_state = GameStateEnum::Playing;
+                                ctx.init();
+                            }
+                        },
+                        _ => {}
+                    }
                 }
             }
         }
