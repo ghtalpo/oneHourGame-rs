@@ -19,12 +19,14 @@ enum CharacterEnum {
 
 struct Character {
     position: Vec2,
+    default_position: Vec2,
 }
 
 impl Character {
     pub fn new() -> Self {
         Self {
             position: Vec2::default(),
+            default_position: Vec2 { x: 9, y: 13 },
         }
     }
 }
@@ -92,6 +94,10 @@ impl Context {
         for index in 0..MAZE_HEIGHT {
             self.maze
                 .insert(index, self.default_maze.get(index).unwrap().clone());
+        }
+
+        for i in 0..CharacterEnum::Max as usize {
+            self.characters[i].position = self.characters[i].default_position;
         }
 
         self.draw_maze();
