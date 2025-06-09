@@ -2,11 +2,45 @@ use std::time::{Duration, SystemTime};
 
 use sdl3::{event::Event, pixels::Color};
 
-struct Context {}
+const MAZE_WIDTH: usize = 19;
+const MAZE_HEIGHT: usize = 19;
+
+struct Context {
+    maze: Vec<String>,
+    default_maze: Vec<String>,
+}
 
 impl Context {
     pub fn new() -> Self {
-        Self {}
+        let default_maze = vec![
+            "#########o#########",
+            "#ooooooo#o#ooooooo#",
+            "#o###o#o#o#o#o###o#",
+            "#o# #o#ooooo#o# #o#",
+            "#o###o###o###o###o#",
+            "#ooooooooooooooooo#",
+            "#o###o###o###o###o#",
+            "#ooo#o#ooooo#o#ooo#",
+            "###o#o#o###o#o#o###",
+            "oooooooo# #oooooooo",
+            "###o#o#o###o#o#o###",
+            "#ooo#o#ooooo#o#ooo#",
+            "#o###o###o###o###o#",
+            "#oooooooo oooooooo#",
+            "#o###o###o###o###o#",
+            "#o# #o#ooooo#o# #o#",
+            "#o###o#o#o#o#o###o#",
+            "#ooooooo#o#ooooooo#",
+            "#########o#########",
+        ]
+        .iter()
+        .map(|x| x.to_string())
+        .collect();
+
+        Self {
+            maze: Vec::new(),
+            default_maze,
+        }
     }
     pub fn init(&mut self) {}
 }
