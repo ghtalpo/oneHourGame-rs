@@ -321,6 +321,8 @@ impl Context {
         }
 
         if !routes[target_position.y as usize * MAZE_WIDTH + target_position.x as usize].is_empty()
+            && routes[target_position.y as usize * MAZE_WIDTH + target_position.x as usize][0]
+                != character.last_position
         {
             return routes[target_position.y as usize * MAZE_WIDTH + target_position.x as usize][0];
         } else {
