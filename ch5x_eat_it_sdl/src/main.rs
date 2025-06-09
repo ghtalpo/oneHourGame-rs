@@ -32,6 +32,7 @@ impl TryFrom<usize> for CharacterEnum {
         match v {
             x if x == CharacterEnum::Player as usize => Ok(CharacterEnum::Player),
             x if x == CharacterEnum::Random as usize => Ok(CharacterEnum::Random),
+            x if x == CharacterEnum::Chase as usize => Ok(CharacterEnum::Chase),
             _ => Err(()),
         }
     }
@@ -213,6 +214,10 @@ impl Context {
                     Some('1') => {
                         self.canvas.set_draw_color(Color::BLUE);
                         self.draw_circle(y, x, 72);
+                    }
+                    Some('2') => {
+                        self.canvas.set_draw_color(Color::RED);
+                        self.draw_circle(y, x, 120);
                     }
                     _ => {}
                 }
