@@ -112,6 +112,12 @@ impl Character {
     }
 }
 
+struct TextureInfo<'a> {
+    width: u32,
+    height: u32,
+    texture: Texture<'a>,
+}
+
 struct Context {
     maze: [u8; MAZE_HEIGHT * MAZE_WIDTH],
     default_maze: [u8; MAZE_HEIGHT * MAZE_WIDTH],
@@ -338,15 +344,7 @@ impl Context {
     }
 
     // [6-7]미로를 그리는 함수를 선언한다
-    pub fn draw_maze(
-        &mut self,
-        width_bad: u32,
-        height_bad: u32,
-        texture_bad: &Texture<'_>,
-        width_good: u32,
-        height_good: u32,
-        texture_good: &Texture<'_>,
-    ) {
+    pub fn draw_maze(&mut self, bad_texture: &TextureInfo, good_texture: &TextureInfo) {
         self.canvas.set_draw_color(Color::RGB(0, 0, 0));
         self.canvas.clear();
 
@@ -419,23 +417,27 @@ impl Context {
             }
             GameStateEnum::GameOver => {
                 let target = FRect::new(
-                    (SCREEN_WIDTH as f32 - width_bad as f32) / 2.0,
-                    (SCREEN_HEIGHT as f32 - height_bad as f32) / 2.0,
-                    width_bad as f32,
-                    height_bad as f32,
+                    (SCREEN_WIDTH as f32 - bad_texture.width as f32) / 2.0,
+                    (SCREEN_HEIGHT as f32 - bad_texture.height as f32) / 2.0,
+                    bad_texture.width as f32,
+                    bad_texture.height as f32,
                 );
 
-                self.canvas.copy(texture_bad, None, Some(target)).unwrap();
+                self.canvas
+                    .copy(&bad_texture.texture, None, Some(target))
+                    .unwrap();
             }
             GameStateEnum::GameEnd => {
                 let target = FRect::new(
-                    (SCREEN_WIDTH as f32 - width_good as f32) / 2.0,
-                    (SCREEN_HEIGHT as f32 - height_good as f32) / 2.0,
-                    width_good as f32,
-                    height_good as f32,
+                    (SCREEN_WIDTH as f32 - good_texture.width as f32) / 2.0,
+                    (SCREEN_HEIGHT as f32 - good_texture.height as f32) / 2.0,
+                    good_texture.width as f32,
+                    good_texture.height as f32,
                 );
 
-                self.canvas.copy(texture_good, None, Some(target)).unwrap();
+                self.canvas
+                    .copy(&good_texture.texture, None, Some(target))
+                    .unwrap();
             }
         }
 
@@ -504,27 +506,33 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut font = ttf_context.load_font("DOSSaemmul.ttf", 32.0)?;
     font.set_style(sdl3::ttf::FontStyle::BOLD);
 
-    let surface_sad = font
+    let surface_game_over = font
         .render("GAME OVER")
         .blended(Color::WHITE)
         .map_err(|e| e.to_string())?;
-    let texture_bad = texture_creator
-        .create_texture_from_surface(&surface_sad)
+    let texture_game_over = texture_creator
+        .create_texture_from_surface(&surface_game_over)
         .map_err(|e| e.to_string())?;
-    let TextureQuery { width, height, .. } = texture_bad.query();
-    let width_bad = width;
-    let height_bad = height;
+    let TextureQuery { width, height, .. } = texture_game_over.query();
+    let texture_info_game_over = TextureInfo {
+        width,
+        height,
+        texture: texture_game_over,
+    };
 
-    let surface_good = font
+    let surface_congrat = font
         .render("CONGRATULATIONS!")
         .blended(Color::WHITE)
         .map_err(|e| e.to_string())?;
-    let texture_good = texture_creator
-        .create_texture_from_surface(&surface_good)
+    let texture_congrat = texture_creator
+        .create_texture_from_surface(&surface_congrat)
         .map_err(|e| e.to_string())?;
-    let TextureQuery { width, height, .. } = texture_good.query();
-    let width_good = width;
-    let height_good = height;
+    let TextureQuery { width, height, .. } = texture_congrat.query();
+    let texture_info_congrat = TextureInfo {
+        width,
+        height,
+        texture: texture_congrat,
+    };
 
     let mut events = sdl_context.event_pump()?;
 
@@ -738,14 +746,7 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
 
         // [6-11-34]화면을 다시 그린다
-        ctx.draw_maze(
-            width_bad,
-            height_bad,
-            &texture_bad,
-            width_good,
-            height_good,
-            &texture_good,
-        );
+        ctx.draw_maze(&texture_info_game_over, &texture_info_congrat);
 
         std::thread::sleep(Duration::from_millis(100));
     }
