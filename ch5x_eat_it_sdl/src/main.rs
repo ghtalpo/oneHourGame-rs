@@ -15,7 +15,8 @@ const CELL_SIZE: f32 = 32.0;
 
 enum CharacterEnum {
     Player = 0,
-    Max = 1,
+    Random = 1,
+    Max = 2,
 }
 
 struct Character {
@@ -87,7 +88,13 @@ impl Context {
             maze: Vec::with_capacity(MAZE_HEIGHT),
             default_maze,
             canvas,
-            characters: [Character::new()],
+            characters: [
+                Character::new(),
+                Character {
+                    position: Vec2::default(),
+                    default_position: Vec2 { x: 1, y: 1 },
+                },
+            ],
         }
     }
 
