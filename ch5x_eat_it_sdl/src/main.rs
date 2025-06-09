@@ -6,7 +6,7 @@ use sdl3::{
     event::Event,
     keyboard::Keycode,
     pixels::Color,
-    render::{Canvas, FPoint, FRect, TextureQuery},
+    render::{Canvas, FPoint, FRect, Texture, TextureQuery},
     video::Window,
 };
 
@@ -55,8 +55,9 @@ enum DirectionEnum {
 
 #[derive(PartialEq)]
 enum GameStateEnum {
-    Playing = 0,
-    GameOver = 1,
+    Playing,
+    GameOver,
+    GameEnd,
 }
 
 #[derive(Clone, Copy)]
@@ -195,7 +196,15 @@ impl Context {
         // self.draw_maze();
     }
 
-    pub fn draw_maze(&mut self, width: u32, height: u32, texture: &sdl3::render::Texture<'_>) {
+    pub fn draw_maze(
+        &mut self,
+        width_bad: u32,
+        height_bad: u32,
+        texture_bad: &Texture<'_>,
+        width_good: u32,
+        height_good: u32,
+        texture_good: &sdl3::render::Texture<'_>,
+    ) {
         self.canvas.set_draw_color(Color::RGB(0, 0, 0));
         self.canvas.clear();
 
@@ -267,13 +276,23 @@ impl Context {
             }
             GameStateEnum::GameOver => {
                 let target = FRect::new(
-                    (SCREEN_WIDTH as f32 - width as f32) / 2.0,
-                    (SCREEN_HEIGHT as f32 - height as f32) / 2.0,
-                    width as f32,
-                    height as f32,
+                    (SCREEN_WIDTH as f32 - width_bad as f32) / 2.0,
+                    (SCREEN_HEIGHT as f32 - height_bad as f32) / 2.0,
+                    width_bad as f32,
+                    height_bad as f32,
                 );
 
-                self.canvas.copy(&texture, None, Some(target)).unwrap();
+                self.canvas.copy(&texture_bad, None, Some(target)).unwrap();
+            }
+            GameStateEnum::GameEnd => {
+                let target = FRect::new(
+                    (SCREEN_WIDTH as f32 - width_good as f32) / 2.0,
+                    (SCREEN_HEIGHT as f32 - height_good as f32) / 2.0,
+                    width_good as f32,
+                    height_good as f32,
+                );
+
+                self.canvas.copy(&texture_good, None, Some(target)).unwrap();
             }
         }
 
@@ -425,14 +444,27 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut font = ttf_context.load_font("DOSSaemmul.ttf", 32.0)?;
     font.set_style(sdl3::ttf::FontStyle::BOLD);
 
-    let surface = font
+    let surface_sad = font
         .render("GAME OVER")
         .blended(Color::WHITE)
         .map_err(|e| e.to_string())?;
-    let texture = texture_creator
-        .create_texture_from_surface(&surface)
+    let texture_bad = texture_creator
+        .create_texture_from_surface(&surface_sad)
         .map_err(|e| e.to_string())?;
-    let TextureQuery { width, height, .. } = texture.query();
+    let TextureQuery { width, height, .. } = texture_bad.query();
+    let width_bad = width;
+    let height_bad = height;
+
+    let surface_good = font
+        .render("CONGRATULATIONS!")
+        .blended(Color::WHITE)
+        .map_err(|e| e.to_string())?;
+    let texture_good = texture_creator
+        .create_texture_from_surface(&surface_good)
+        .map_err(|e| e.to_string())?;
+    let TextureQuery { width, height, .. } = texture_good.query();
+    let width_good = width;
+    let height_good = height;
 
     let mut events = sdl_context.event_pump()?;
 
@@ -576,11 +608,14 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let y = new_position.y as usize;
                 if current_block == 'o' {
                     ctx.maze[y].replace_range(x..x + 1, " ");
+                    if ctx.is_complete() {
+                        ctx.game_state = GameStateEnum::GameEnd;
+                    }
                 }
                 ctx.characters[CharacterEnum::Player as usize].position = new_position;
             }
         }
-        if ctx.game_state == GameStateEnum::GameOver {
+        if ctx.game_state == GameStateEnum::GameOver || ctx.game_state == GameStateEnum::GameEnd {
             for event in events.poll_iter() {
                 match event {
                     Event::Quit { .. } => break 'running,
@@ -598,7 +633,14 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
             }
         }
-        ctx.draw_maze(width, height, &texture);
+        ctx.draw_maze(
+            width_bad,
+            height_bad,
+            &texture_bad,
+            width_good,
+            height_good,
+            &texture_good,
+        );
 
         std::thread::sleep(Duration::from_millis(100));
     }
