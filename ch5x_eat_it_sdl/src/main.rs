@@ -42,7 +42,10 @@ impl Context {
             default_maze,
         }
     }
-    pub fn init(&mut self) {}
+
+    pub fn init(&mut self) {
+        self.maze.clone_from_slice(&self.default_maze);
+    }
 }
 
 pub fn main() -> Result<(), Box<dyn std::error::Error>> {
