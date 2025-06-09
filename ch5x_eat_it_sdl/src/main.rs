@@ -417,6 +417,24 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
                                 new_position = ctx
                                     .get_chase_position(ctx.characters[i].clone(), target_position);
                             }
+                            CharacterEnum::Siege => {
+                                let chase_to_player = ctx.characters
+                                    [CharacterEnum::Player as usize]
+                                    .position
+                                    .subtract_new(
+                                        &ctx.characters[CharacterEnum::Chase as usize].position,
+                                    );
+
+                                let mut target_position = ctx.characters
+                                    [CharacterEnum::Player as usize]
+                                    .position
+                                    .add_new(&chase_to_player);
+
+                                target_position.get_loop_position();
+
+                                new_position = ctx
+                                    .get_chase_position(ctx.characters[i].clone(), target_position);
+                            }
                             _ => {}
                         }
                         ctx.characters[i].last_position = ctx.characters[i].position;
