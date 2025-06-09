@@ -48,6 +48,7 @@ enum DirectionEnum {
 struct Character {
     position: Vec2,
     default_position: Vec2,
+    last_position: Vec2,
 }
 
 impl Character {
@@ -55,11 +56,12 @@ impl Character {
         Self {
             position: Vec2::default(),
             default_position: Vec2 { x: 9, y: 13 },
+            last_position: Vec2::default(),
         }
     }
 }
 
-#[derive(Clone, Copy, Default)]
+#[derive(Clone, Copy, Default, PartialEq)]
 struct Vec2 {
     x: i8,
     y: i8,
@@ -127,6 +129,7 @@ impl Context {
                 Character {
                     position: Vec2::default(),
                     default_position: Vec2 { x: 1, y: 1 },
+                    last_position: Vec2::default(),
                 },
             ],
             directions: [
@@ -148,6 +151,7 @@ impl Context {
 
         for i in 0..CharacterEnum::Max as usize {
             self.characters[i].position = self.characters[i].default_position;
+            self.characters[i].last_position = self.characters[i].default_position;
         }
 
         self.draw_maze();
@@ -242,7 +246,7 @@ impl Context {
                 .chars()
                 .nth(new_position.x as usize)
                 .unwrap();
-            if current_block != '#' {
+            if current_block != '#' && new_position != character.last_position {
                 positions.push(new_position);
             }
         }
@@ -283,6 +287,7 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
                             }
                             _ => {}
                         }
+                        ctx.characters[i].last_position = ctx.characters[i].position;
                         ctx.characters[i].position = new_position;
                     }
                 }
