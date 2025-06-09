@@ -345,7 +345,7 @@ impl Context {
         texture_bad: &Texture<'_>,
         width_good: u32,
         height_good: u32,
-        texture_good: &sdl3::render::Texture<'_>,
+        texture_good: &Texture<'_>,
     ) {
         self.canvas.set_draw_color(Color::RGB(0, 0, 0));
         self.canvas.clear();
@@ -384,7 +384,7 @@ impl Context {
                             val if val == 'o' as u8 => {
                                 self.canvas.set_draw_color(Color::RED);
                                 self.canvas
-                                    .draw_rect(FRect::new(
+                                    .fill_rect(FRect::new(
                                         x as f32 * CELL_SIZE + CELL_SIZE / 2.0,
                                         y as f32 * CELL_SIZE + CELL_SIZE / 2.0,
                                         3.0,
