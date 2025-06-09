@@ -495,6 +495,10 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
                             ctx.characters[i].last_position = ctx.characters[i].position;
                             ctx.characters[i].position = new_position;
                         }
+                        if ctx.is_game_over() {
+                            ctx.game_state = GameStateEnum::GameOver;
+                            continue;
+                        }
                     }
                 }
                 Err(e) => {
