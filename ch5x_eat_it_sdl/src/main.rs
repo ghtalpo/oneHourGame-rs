@@ -44,6 +44,7 @@ enum DirectionEnum {
     Max = 4,
 }
 
+#[derive(Clone, Copy)]
 struct Character {
     position: Vec2,
     default_position: Vec2,
@@ -269,10 +270,14 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
                     last_clock = SystemTime::now();
 
                     for i in CharacterEnum::Player as usize + 1..CharacterEnum::Max as usize {
+                        let mut new_position = ctx.characters[i].position;
                         match CharacterEnum::try_from(i).unwrap() {
-                            CharacterEnum::Random => {}
+                            CharacterEnum::Random => {
+                                new_position = ctx.get_random_position(ctx.characters[i].clone());
+                            }
                             _ => {}
                         }
+                        ctx.characters[i].position = new_position;
                     }
                 }
             }
