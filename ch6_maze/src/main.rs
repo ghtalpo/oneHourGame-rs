@@ -3,6 +3,7 @@ use getch_rs::{Getch, Key};
 const MAZE_WIDTH: usize = 8;
 const MAZE_HEIGHT: usize = 8;
 
+#[derive(Clone, Copy)]
 enum DirectionEnum {
     North = 0,
     West,
@@ -24,15 +25,44 @@ impl Tile {
     }
 }
 
+struct Vec2 {
+    x: isize,
+    y: isize,
+}
+
+impl Vec2 {
+    pub fn new(x: isize, y: isize) -> Self {
+        Self { x, y }
+    }
+    pub fn is_inside_maze(&self) -> bool {
+        self.x >= 0 && self.x < MAZE_WIDTH as isize && self.y >= 0 && self.y < MAZE_HEIGHT as isize
+    }
+    pub fn add(&mut self, other: &Vec2) {
+        self.x += other.x;
+        self.y += other.y;
+    }
+    pub fn add_new(&self, other: &Vec2) -> Vec2 {
+        Vec2::new(self.x + other.x, self.y + other.y)
+    }
+}
+
 struct Context {
     maze: [Tile; MAZE_HEIGHT * MAZE_WIDTH],
+    directions: [Vec2; DirectionEnum::Max as usize],
     g: Getch,
 }
 
 impl Context {
     pub fn new() -> Self {
+        let directions = [
+            Vec2::new(0, -1),
+            Vec2::new(-1, 0),
+            Vec2::new(0, 1),
+            Vec2::new(1, 0),
+        ];
         Self {
             maze: [Tile::new(); MAZE_HEIGHT * MAZE_WIDTH],
+            directions,
             g: Getch::new(),
         }
     }
@@ -90,6 +120,21 @@ impl Context {
                     self.maze[y * MAZE_WIDTH + x].walls[i] = true;
                 }
             }
+        }
+    }
+    fn dig_wall(&mut self, position: Vec2, direction: DirectionEnum) {
+        if !position.is_inside_maze() {
+            return;
+        }
+        self.maze[position.y as usize * MAZE_WIDTH + position.x as usize].walls
+            [direction as usize] = false;
+
+        let next_position = position.add_new(&self.directions[direction as usize]);
+        if next_position.is_inside_maze() {
+            let next_direction = (direction as usize + 2) % DirectionEnum::Max as usize;
+
+            self.maze[next_position.y as usize * MAZE_WIDTH + next_position.x as usize].walls
+                [next_direction as usize] = false;
         }
     }
 }
