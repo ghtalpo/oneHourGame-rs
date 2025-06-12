@@ -42,7 +42,7 @@ impl Tile {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Default)]
 struct Vec2 {
     x: isize,
     y: isize,
@@ -64,9 +64,24 @@ impl Vec2 {
     }
 }
 
+struct Character {
+    position: Vec2,
+    direction: DirectionEnum,
+}
+
+impl Character {
+    pub fn new() -> Self {
+        Self {
+            position: Vec2::default(),
+            direction: DirectionEnum::North,
+        }
+    }
+}
+
 struct Context {
     maze: [Tile; MAZE_HEIGHT * MAZE_WIDTH],
     directions: [Vec2; DirectionEnum::Max as usize],
+    player: Character,
     g: Getch,
     rng: ThreadRng,
 }
@@ -81,6 +96,7 @@ impl Context {
         ];
         Self {
             maze: [Tile::new(); MAZE_HEIGHT * MAZE_WIDTH],
+            player: Character::new(),
             directions,
             g: Getch::new(),
             rng: rand::rng(),
@@ -100,7 +116,11 @@ impl Context {
             }
             println!();
             for x in 0..MAZE_WIDTH {
-                let floor_aa = ' ';
+                let mut floor_aa = ' ';
+                if x == self.player.position.x as usize && y == self.player.position.y as usize {
+                    const DIRECTION_AA: [char; DirectionEnum::Max as usize] = ['↑', '←', '↓', '→'];
+                    floor_aa = DIRECTION_AA[self.player.direction as usize];
+                }
                 print!(
                     "{}{}{}",
                     if self.maze[y * MAZE_WIDTH + x].walls[DirectionEnum::West as usize] {
@@ -132,6 +152,10 @@ impl Context {
     }
     pub fn init(&mut self) {
         self.generate_map();
+
+        self.player.position = Vec2::new(0, 0);
+
+        self.player.direction = DirectionEnum::North;
     }
     fn generate_map(&mut self) {
         for y in 0..MAZE_HEIGHT {
