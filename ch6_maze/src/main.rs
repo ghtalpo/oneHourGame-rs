@@ -76,6 +76,22 @@ impl Character {
             direction: DirectionEnum::North,
         }
     }
+    pub fn turn_left(&mut self) {
+        self.direction = ((self.direction as usize + 1) % DirectionEnum::Max as usize)
+            .try_into()
+            .unwrap();
+    }
+    pub fn turn_back(&mut self) {
+        self.direction = ((self.direction as usize + 2) % DirectionEnum::Max as usize)
+            .try_into()
+            .unwrap();
+    }
+    pub fn turn_right(&mut self) {
+        self.direction = ((self.direction as usize + DirectionEnum::Max as usize - 1)
+            % DirectionEnum::Max as usize)
+            .try_into()
+            .unwrap();
+    }
 }
 
 struct Context {
@@ -240,6 +256,30 @@ fn main() {
         ctx.draw_map();
 
         match ctx.g.getch() {
+            Ok(Key::Char('w')) => {
+                if !ctx.maze
+                    [ctx.player.position.y as usize * MAZE_WIDTH + ctx.player.position.x as usize]
+                    .walls[ctx.player.direction as usize]
+                {
+                    let next_position = ctx
+                        .player
+                        .position
+                        .add_new(&ctx.directions[ctx.player.direction as usize]);
+
+                    if next_position.is_inside_maze() {
+                        ctx.player.position = next_position;
+                    }
+                }
+            }
+            Ok(Key::Char('a')) => {
+                ctx.player.turn_left();
+            }
+            Ok(Key::Char('s')) => {
+                ctx.player.turn_back();
+            }
+            Ok(Key::Char('d')) => {
+                ctx.player.turn_right();
+            }
             Ok(Key::Esc) => {
                 std::process::exit(0);
             }
