@@ -50,6 +50,24 @@ impl Context {
             }
             println!();
             for x in 0..MAZE_WIDTH {
+                let floor_aa = ' ';
+                print!(
+                    "{}{}{}",
+                    if self.maze[y * MAZE_WIDTH + x].walls[DirectionEnum::West as usize] {
+                        '-'
+                    } else {
+                        ' '
+                    },
+                    floor_aa,
+                    if self.maze[y * MAZE_WIDTH + x].walls[DirectionEnum::East as usize] {
+                        '-'
+                    } else {
+                        ' '
+                    }
+                );
+            }
+            println!();
+            for x in 0..MAZE_WIDTH {
                 print!(
                     "+{}+",
                     if self.maze[y * MAZE_WIDTH + x].walls[DirectionEnum::South as usize] {
