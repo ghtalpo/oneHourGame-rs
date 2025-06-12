@@ -62,10 +62,18 @@ impl Context {
             println!();
         }
     }
+    pub fn init(&mut self) {
+        self.generate_map();
+    }
+    fn generate_map(&mut self) {
+
+    }
 }
 
 fn main() {
     let mut ctx = Context::new();
+
+    ctx.init();
 
     loop {
         clearscreen::clear().unwrap();
