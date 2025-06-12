@@ -1,3 +1,5 @@
+use getch_rs::{Getch, Key};
+
 const MAZE_WIDTH: usize = 8;
 const MAZE_HEIGHT: usize = 8;
 
@@ -11,29 +13,70 @@ enum DirectionEnum {
 
 #[derive(Clone, Copy)]
 struct Tile {
-    wall: [bool; DirectionEnum::Max as usize],
+    walls: [bool; DirectionEnum::Max as usize],
 }
 
 impl Tile {
     pub fn new() -> Self {
         Self {
-            wall: [false; DirectionEnum::Max as usize],
+            walls: [false; DirectionEnum::Max as usize],
         }
     }
 }
 
 struct Context {
     maze: [Tile; MAZE_HEIGHT * MAZE_WIDTH],
+    g: Getch,
 }
 
 impl Context {
     pub fn new() -> Self {
         Self {
             maze: [Tile::new(); MAZE_HEIGHT * MAZE_WIDTH],
+            g: Getch::new(),
+        }
+    }
+    pub fn draw_map(&self) {
+        for y in 0..MAZE_HEIGHT {
+            for x in 0..MAZE_WIDTH {
+                print!(
+                    "+{}+",
+                    if self.maze[y * MAZE_WIDTH + x].walls[DirectionEnum::North as usize] {
+                        '-'
+                    } else {
+                        ' '
+                    }
+                );
+            }
+            println!();
+            for x in 0..MAZE_WIDTH {
+                print!(
+                    "+{}+",
+                    if self.maze[y * MAZE_WIDTH + x].walls[DirectionEnum::South as usize] {
+                        '-'
+                    } else {
+                        ' '
+                    }
+                );
+            }
+            println!();
         }
     }
 }
 
 fn main() {
-    loop {}
+    let mut ctx = Context::new();
+
+    loop {
+        clearscreen::clear().unwrap();
+
+        ctx.draw_map();
+
+        match ctx.g.getch() {
+            Ok(Key::Esc) => {
+                std::process::exit(0);
+            }
+            _ => {}
+        }
+    }
 }
