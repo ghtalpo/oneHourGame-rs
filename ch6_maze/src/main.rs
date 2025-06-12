@@ -170,7 +170,9 @@ impl Context {
                 if to_dig_wall_positions.len() <= 0 {
                     break;
                 }
-    }
+
+                current_position = to_dig_wall_positions[0];
+            }
         }
     }
     fn dig_wall(&mut self, position: &Vec2, direction: DirectionEnum) {
