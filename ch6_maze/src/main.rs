@@ -137,6 +137,19 @@ impl Context {
                 [next_direction as usize] = false;
         }
     }
+    fn can_dig_wall(&self, position: Vec2, direction: DirectionEnum) -> bool {
+        let next_position = position.add_new(&self.directions[direction as usize]);
+        if !next_position.is_inside_maze() {
+            return false;
+        }
+        for i in 0..DirectionEnum::Max as usize {
+            if !self.maze[next_position.y as usize * MAZE_WIDTH + next_position.x as usize].walls[i]
+            {
+                return false;
+            }
+        }
+        return true;
+    }
 }
 
 fn main() {
