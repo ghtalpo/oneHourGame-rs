@@ -84,7 +84,13 @@ impl Context {
         self.generate_map();
     }
     fn generate_map(&mut self) {
-
+        for y in 0..MAZE_HEIGHT {
+            for x in 0..MAZE_WIDTH {
+                for i in 0..DirectionEnum::Max as usize {
+                    self.maze[y * MAZE_WIDTH + x].walls[i] = true;
+                }
+            }
+        }
     }
 }
 
