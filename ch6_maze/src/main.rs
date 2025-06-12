@@ -1,4 +1,7 @@
+use std::{os::unix::fs::DirBuilderExt, thread::current};
+
 use getch_rs::{Getch, Key};
+use rand::{Rng, rngs::ThreadRng, seq::IndexedRandom};
 
 const MAZE_WIDTH: usize = 8;
 const MAZE_HEIGHT: usize = 8;
@@ -10,6 +13,20 @@ enum DirectionEnum {
     South,
     East,
     Max,
+}
+
+impl TryFrom<usize> for DirectionEnum {
+    type Error = ();
+
+    fn try_from(v: usize) -> Result<Self, Self::Error> {
+        match v {
+            x if x == DirectionEnum::North as usize => Ok(DirectionEnum::North),
+            x if x == DirectionEnum::West as usize => Ok(DirectionEnum::West),
+            x if x == DirectionEnum::South as usize => Ok(DirectionEnum::South),
+            x if x == DirectionEnum::East as usize => Ok(DirectionEnum::East),
+            _ => Err(()),
+        }
+    }
 }
 
 #[derive(Clone, Copy)]
@@ -25,6 +42,7 @@ impl Tile {
     }
 }
 
+#[derive(Clone, Copy)]
 struct Vec2 {
     x: isize,
     y: isize,
@@ -50,6 +68,7 @@ struct Context {
     maze: [Tile; MAZE_HEIGHT * MAZE_WIDTH],
     directions: [Vec2; DirectionEnum::Max as usize],
     g: Getch,
+    rng: ThreadRng,
 }
 
 impl Context {
@@ -64,6 +83,7 @@ impl Context {
             maze: [Tile::new(); MAZE_HEIGHT * MAZE_WIDTH],
             directions,
             g: Getch::new(),
+            rng: rand::rng(),
         }
     }
     pub fn draw_map(&self) {
@@ -121,8 +141,39 @@ impl Context {
                 }
             }
         }
+
+        let mut current_position = Vec2::new(0, 0);
+        let mut to_dig_wall_positions: Vec<Vec2> = Vec::new();
+
+        to_dig_wall_positions.push(current_position);
+
+        loop {
+            let mut can_dig_directions = Vec::new();
+
+            for i in 0..DirectionEnum::Max as usize {
+                if self.can_dig_wall(&current_position, i.try_into().unwrap()) {
+                    can_dig_directions.push(i);
+                }
+            }
+
+            if can_dig_directions.len() > 0 {
+                let dig_direction = *can_dig_directions.choose(&mut self.rng).unwrap();
+
+                self.dig_wall(&current_position, dig_direction.try_into().unwrap());
+
+                current_position.add(&self.directions[dig_direction]);
+
+                to_dig_wall_positions.push(current_position);
+            } else {
+                to_dig_wall_positions.remove(0);
+
+                if to_dig_wall_positions.len() <= 0 {
+                    break;
+                }
     }
-    fn dig_wall(&mut self, position: Vec2, direction: DirectionEnum) {
+        }
+    }
+    fn dig_wall(&mut self, position: &Vec2, direction: DirectionEnum) {
         if !position.is_inside_maze() {
             return;
         }
@@ -137,7 +188,7 @@ impl Context {
                 [next_direction as usize] = false;
         }
     }
-    fn can_dig_wall(&self, position: Vec2, direction: DirectionEnum) -> bool {
+    fn can_dig_wall(&self, position: &Vec2, direction: DirectionEnum) -> bool {
         let next_position = position.add_new(&self.directions[direction as usize]);
         if !next_position.is_inside_maze() {
             return false;
