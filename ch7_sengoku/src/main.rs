@@ -120,6 +120,7 @@ impl Context {
     }
 
     fn draw_screen(&self) {
+        clearscreen::clear().unwrap();
         // println!(
         //     "1570년　～～～～～～～～～～～～～～～～　　　　　　～\n\
         //     　　　　　～～～～～～～～～～～～～～～～　0요네5　～\n\
@@ -347,13 +348,41 @@ fn main() {
             turn_order.swap(i, ctx.rng.random_range(0..CastleEnum::Max as usize))
         }
 
-        match ctx.g.getch() {
-            Ok(Key::Esc) => {
-                std::process::exit(0);
+        for i in 0..CastleEnum::Max as usize {
+            ctx.draw_screen();
+
+            for j in 0..CastleEnum::Max as usize {
+                print!("{}", if j == i { ">" } else { " " },);
+                print!(
+                    "{:2}",
+                    get_first_n_chars(&ctx.castles[turn_order[j]].name, 2),
+                );
             }
-            _ => {
-                return;
+
+            println!("\n");
+
+            let current_castle = turn_order[i];
+
+            match ctx.g.getch() {
+                Ok(Key::Esc) => {
+                    std::process::exit(0);
+                }
+                _ => {}
+            }
+
+            println!(
+                "{} 가문의 {} 전략회의...",
+                ctx.lords[ctx.castles[current_castle].owner as usize].family_name,
+                ctx.castles[current_castle].name,
+            );
+
+            match ctx.g.getch() {
+                Ok(Key::Esc) => {
+                    std::process::exit(0);
+                }
+                _ => {}
             }
         }
+        ctx.year += 1;
     }
 }
