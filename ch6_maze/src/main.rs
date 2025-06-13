@@ -608,7 +608,22 @@ fn main() {
 
                         if ctx.player.position.x as usize == GOAL_X
                             && ctx.player.position.y as usize == GOAL_Y
-                        {}
+                        {
+                            clearscreen::clear().unwrap();
+                            println!(" * * CONGRATULATIONS * * ");
+                            println!();
+                            println!(" 드디어 전설의 부적을 손에 넣었다!");
+                            println!();
+                            println!("  하지만 고난을 함께 한 무엇과도 바꿀 수 없는");
+                            println!(" [동료]라는 보물을 손에 넣은 지금,");
+                            println!(" 부적의 광채는 더 이상 눈에 들어오지 않는다...");
+                            println!();
+                            println!("     ~  THE END ~");
+
+                            let _ = ctx.g.getch();
+
+                            ctx.init();
+                        }
                     }
                 }
             }
