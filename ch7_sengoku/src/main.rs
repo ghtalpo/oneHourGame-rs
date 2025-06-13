@@ -1,4 +1,5 @@
 const TROOP_BASE: usize = 5;
+const START_YEAR: u16 = 1570;
 
 enum LordEnum {
     Date = 0,
@@ -61,6 +62,7 @@ impl Castle {
 struct Context {
     lords: [Lord; LordEnum::Max as usize],
     castles: [Castle; CastleEnum::Max as usize],
+    year: u16,
 }
 
 impl Context {
@@ -90,7 +92,17 @@ impl Context {
                 Castle::new("오코성", LordEnum::Chosokabe, TROOP_BASE),
                 Castle::new("우찌성", LordEnum::Simazu, TROOP_BASE),
             ],
+            year: 0,
         }
     }
+
+    pub fn init(&mut self) {
+        self.year = START_YEAR;
+    }
 }
-fn main() {}
+
+fn main() {
+    let mut ctx = Context::new();
+    ctx.init();
+    // loop {}
+}
