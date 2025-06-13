@@ -104,7 +104,7 @@ impl Character {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 enum AAEnum {
     All = 0,
     FrontLeftNorth,
@@ -494,7 +494,66 @@ impl Context {
         }
         return true;
     }
-    pub fn draw_3d(&self) {}
+    pub fn draw_3d(&self) {
+        const SCREEN_WIDTH: usize = 9;
+        const SCREEN_HEIGHT: usize = 8;
+        let mut screen = [
+            ['0', '0', '0', '0', '0', '0', '0', '0', '0'],
+            ['0', '0', '0', '0', '0', '0', '0', '0', '0'],
+            ['0', '0', '0', '0', '0', '0', '0', '0', '0'],
+            ['0', '0', '0', '0', '0', '0', '0', '0', '0'],
+            ['0', '0', '0', '0', '0', '0', '0', '0', '0'],
+            ['0', '0', '0', '0', '0', '0', '0', '0', '0'],
+            ['0', '0', '0', '0', '0', '0', '0', '0', '0'],
+            ['0', '0', '0', '0', '0', '0', '0', '0', '0'],
+        ];
+
+        for i in 0..LocationEnum::Max as usize {
+            let position = self
+                .player
+                .position
+                .add_new(&self.resource.locations[self.player.direction as usize][i]);
+
+            if !position.is_inside_maze() {
+                continue;
+            }
+
+            for j in 0..DirectionEnum::Max as usize {
+                let direction = (DirectionEnum::Max as usize + j - self.player.direction as usize)
+                    % DirectionEnum::Max as usize;
+
+                if !self.maze[position.y as usize * MAZE_WIDTH + position.x as usize].walls[j] {
+                    continue;
+                }
+
+                if self.resource.aa_table[i][direction] == AAEnum::None {
+                    continue;
+                }
+
+                let aa_index = self.resource.aa_table[i][direction];
+                let aa = match aa_index {
+                    AAEnum::All => &self.resource.all,
+                    AAEnum::FrontLeftNorth => &self.resource.front_left_north,
+                    AAEnum::FrontRightNorth => &self.resource.front_right_north,
+                    AAEnum::FrontNorth => &self.resource.front_north,
+                    AAEnum::FrontWest => &self.resource.front_west,
+                    AAEnum::FrontEast => &self.resource.front_east,
+                    AAEnum::LeftNorth => &self.resource.left_north,
+                    AAEnum::RightNorth => &self.resource.right_north,
+                    AAEnum::North => &self.resource.north,
+                    AAEnum::West => &self.resource.west,
+                    AAEnum::East => &self.resource.east,
+                    AAEnum::None => unreachable!(),
+                };
+
+                for k in 0..SCREEN_HEIGHT {
+                    for l in 0..SCREEN_WIDTH {
+                        screen[k][l] = aa[k].chars().nth(l).unwrap();
+                    }
+                }
+            }
+        }
+    }
 }
 
 fn main() {
