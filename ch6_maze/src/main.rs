@@ -6,6 +6,9 @@ use rand::{Rng, rngs::ThreadRng, seq::IndexedRandom};
 const MAZE_WIDTH: usize = 8;
 const MAZE_HEIGHT: usize = 8;
 
+const GOAL_X: usize = MAZE_WIDTH - 1;
+const GOAL_Y: usize = MAZE_HEIGHT - 1;
+
 #[derive(Clone, Copy)]
 enum DirectionEnum {
     North = 0,
@@ -387,6 +390,8 @@ impl Context {
                 if x == self.player.position.x as usize && y == self.player.position.y as usize {
                     const DIRECTION_AA: [char; DirectionEnum::Max as usize] = ['↑', '←', '↓', '→'];
                     floor_aa = DIRECTION_AA[self.player.direction as usize];
+                } else if x == GOAL_X && y == GOAL_Y {
+                    floor_aa = 'G';
                 }
                 print!(
                     "{}{}{}",
@@ -600,6 +605,10 @@ fn main() {
 
                     if next_position.is_inside_maze() {
                         ctx.player.position = next_position;
+
+                        if ctx.player.position.x as usize == GOAL_X
+                            && ctx.player.position.y as usize == GOAL_Y
+                        {}
                     }
                 }
             }
