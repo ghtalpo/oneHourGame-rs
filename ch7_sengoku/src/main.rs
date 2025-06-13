@@ -1,4 +1,4 @@
-use std::io;
+use std::{io, thread::current};
 
 use getch_rs::{Getch, Key};
 use rand::{Rng, rngs::ThreadRng};
@@ -6,7 +6,7 @@ use rand::{Rng, rngs::ThreadRng};
 const TROOP_BASE: usize = 5;
 const START_YEAR: u16 = 1570;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 enum LordEnum {
     Date = 0,
     Uesugi,
@@ -424,6 +424,15 @@ impl Context {
     }
 }
 
+fn input_number() -> usize {
+    let mut input = String::new();
+    io::stdin().read_line(&mut input).expect("입력 오류");
+
+    let num: usize = input.trim().parse().expect("숫자 파싱 오류");
+    println!("{}", num);
+    num
+}
+
 fn main() {
     let mut ctx = Context::new();
     ctx.init();
@@ -436,11 +445,7 @@ fn main() {
 
     let mut selected_castle: usize;
     loop {
-        // selected_castle =
-        let mut input = String::new();
-        io::stdin().read_line(&mut input).expect("입력 오류");
-
-        selected_castle = input.trim().parse().expect("숫자 파싱 오류");
+        selected_castle = input_number();
 
         if selected_castle < CastleEnum::Max as usize {
             break;
@@ -499,6 +504,55 @@ fn main() {
                 ctx.lords[ctx.castles[current_castle].owner as usize].family_name,
                 ctx.castles[current_castle].name,
             );
+
+            if ctx.castles[current_castle].owner == ctx.player_lord {
+                println!(
+                    "{}님, 어디로 진군하시겠습니까?",
+                    ctx.lords[ctx.castles[current_castle].owner as usize].first_name,
+                );
+                for j in 0..ctx.castles[current_castle].connected_castles.len() {
+                    println!(
+                        "{} {}",
+                        *ctx.castles[current_castle]
+                            .connected_castles
+                            .get(j)
+                            .unwrap() as usize,
+                        ctx.castles[*ctx.castles[current_castle]
+                            .connected_castles
+                            .get(j)
+                            .unwrap() as usize]
+                            .name,
+                    );
+                }
+
+                println!("");
+
+                let target_castle: usize = input_number();
+
+                let mut is_connected = false;
+
+                for castle in ctx.castles[current_castle].connected_castles.iter() {
+                    if *castle as usize == target_castle {
+                        is_connected = true;
+
+                        break;
+                    }
+                }
+
+                if !is_connected {
+                    println!("진군을 취소했습니다.");
+
+                    match ctx.g.getch() {
+                        Ok(Key::Esc) => {
+                            std::process::exit(0);
+                        }
+                        _ => {}
+                    }
+
+                    continue;
+                }
+            } else {
+            }
 
             match ctx.g.getch() {
                 Ok(Key::Esc) => {
