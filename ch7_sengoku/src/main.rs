@@ -1,6 +1,7 @@
 const TROOP_BASE: usize = 5;
 const START_YEAR: u16 = 1570;
 
+#[derive(Clone, Copy)]
 enum LordEnum {
     Date = 0,
     Uesugi,
@@ -15,6 +16,7 @@ enum LordEnum {
     Max,
 }
 
+#[derive(Clone, Copy)]
 enum CastleEnum {
     Yonezawa = 0,
     Kasugayama,
@@ -59,6 +61,14 @@ impl Castle {
     }
 }
 
+fn get_first_n_chars(s: &str, n: usize) -> String {
+    let mut chars = s.char_indices();
+    match chars.nth(n) {
+        Some(index) => s[..index.0].to_string(),
+        None => s.to_string(),
+    }
+}
+
 struct Context {
     lords: [Lord; LordEnum::Max as usize],
     castles: [Castle; CastleEnum::Max as usize],
@@ -98,6 +108,222 @@ impl Context {
 
     pub fn init(&mut self) {
         self.year = START_YEAR;
+
+        self.draw_screen();
+    }
+
+    fn draw_screen(&self) {
+        // println!(
+        //     "1570년　～～～～～～～～～～～～～～～～　　　　　　～\n\
+        //     　　　　　～～～～～～～～～～～～～～～～　0요네5　～\n\
+        //     ～～～～～～～～～～～～～～～～～～1가스5　다테　～～\n\
+        //     ～～～～～～～～～～～～～～～　～～우에　　　　　～～\n\
+        //     ～～～～～～～～～～～～～～～　～　　　　　　　　～～\n\
+        //     ～～～～～～～～～～～～～～　　　　　2쓰쓰5　　　～～\n\
+        //     ～～～～～～～～～～～～～　　　　　　다케　　　～～～\n\
+        //     ～～～～～～　　　　　　　5기후5　　　　　　　　～～～\n\
+        //     ～～～～　7요시5　6니조5　오다　4오카5　3오다5　～～～\n\
+        //     ～～～　　모리　　아시　　　　　토쿠　　호조～～～～～\n\
+        //     ～～　～～～～～～～　　　～～～～～～～～～～～～～～\n\
+        //     ～　　　～　8오코5～～　～～～～～～～～～～～～～～～\n\
+        //     ～　　　～～조소～～～～～～～～～～～～～～～～～～～\n\
+        //     ～9우찌5～～～～～～～～～～～～～～～～～～～～～～～\n\
+        //     ～시마～～～～～～～～～～～～～～～～～～～～～～～～\n\
+        //     ～～～～～～～～～～～～～～～～～～～～～～～～～～～\n"
+        // ); // 16
+
+        // [6-2-2]지도의 1번째 행을 그린다
+        println!(
+            "{}년　　～～～～～～～～～～～～～～～～　　　　　～",
+            self.year,
+        ); // 년
+
+        // [6-2-3]지도의 2번째 행을 그린다
+        println!(
+            "　　　　　～～～～～～～～～～～～～～～～　{}{:2}{}　～",
+            // 요네자와성의 성 번호
+            CastleEnum::Yonezawa as usize,
+            // 요네자와성의 이름
+            get_first_n_chars(&self.castles[CastleEnum::Yonezawa as usize].name, 2),
+            // 요네자와성의 병력 수
+            self.castles[CastleEnum::Yonezawa as usize].troop_count,
+        );
+
+        // [6-2-4]지도의 3번째 행을 그린다
+        println!(
+            "～～～～～～～～～～～～～～～～～～{}{:2}{}　{:2}　～～",
+            // 가스가야마성의 성 번호
+            CastleEnum::Kasugayama as usize,
+            // 가스가야마성의 이름
+            get_first_n_chars(&self.castles[CastleEnum::Kasugayama as usize].name, 2),
+            // 가스가야마성의 병력 수
+            self.castles[CastleEnum::Kasugayama as usize].troop_count,
+            // 요네자와성의 성씨
+            get_first_n_chars(
+                &self.lords[self.castles[CastleEnum::Yonezawa as usize].owner as usize].family_name,
+                2
+            ),
+        );
+
+        // [6-2-5]지도의 4번째 행을 그린다
+        println!(
+            "～～～～～～～～～～～～～～～　～～{:2}　　　　　～～",
+            // 가스가야마성의 성씨
+            get_first_n_chars(
+                &self.lords[self.castles[CastleEnum::Kasugayama as usize].owner as usize]
+                    .family_name,
+                2
+            ),
+        );
+
+        // [6-2-6]지도의 5번째 행을 그린다
+        println!("～～～～～～～～～～～～～～～　～　　　　　　　　～～");
+
+        // [6-2-7]지도의 6번째 행을 그린다
+        println!(
+            "～～～～～～～～～～～～～～　　　　　{}{:2}{}　　　～～",
+            // 쓰쓰지가사키관의 성 번호
+            CastleEnum::Tsutsujigasaki as usize,
+            // 쓰쓰지가사키관의 이름
+            get_first_n_chars(&self.castles[CastleEnum::Tsutsujigasaki as usize].name, 2),
+            // 쓰쓰지가사키관의 병력 수
+            self.castles[CastleEnum::Tsutsujigasaki as usize].troop_count,
+        );
+
+        // [6-2-8]지도의 7번째 행을 그린다
+        println!(
+            "～～～～～～～～～～～～～　　　　　　{:2}　　　～～～",
+            // 쓰쓰지가사키관의 성주의 성씨
+            get_first_n_chars(
+                &self.lords[self.castles[CastleEnum::Tsutsujigasaki as usize].owner as usize]
+                    .family_name,
+                2
+            ),
+        );
+
+        // [6-2-9]지도의 8번째 행을 그린다
+        println!(
+            "～～～～～～　　　　　　　{}{:2}{}　　　　　　　　～～～",
+            // 기후성의 성 번호
+            CastleEnum::Gifu as usize,
+            // 기후성의 이름
+            get_first_n_chars(&self.castles[CastleEnum::Gifu as usize].name, 2),
+            // 기후성의 병력 수
+            self.castles[CastleEnum::Gifu as usize].troop_count,
+        );
+
+        // [6-2-10]지도의 9번째 행을 그린다
+        println!(
+            "～～～～　{}{:2}{}　{}{:2}{}　{:2}　　　　　{}{:2}{}　～～～",
+            // 요시다고리야마성의 성 번호
+            CastleEnum::Yoshidakoriyama as usize,
+            // 요시다고리야마성의 이름
+            get_first_n_chars(&self.castles[CastleEnum::Yoshidakoriyama as usize].name, 2),
+            // 요시다고리야마성의 병력 수
+            self.castles[CastleEnum::Yoshidakoriyama as usize].troop_count,
+            // 니조성의 성 번호
+            CastleEnum::Nijo as usize,
+            // 니조성의 이름
+            get_first_n_chars(&self.castles[CastleEnum::Nijo as usize].name, 2),
+            // 니조성의 병력 수
+            self.castles[CastleEnum::Nijo as usize].troop_count,
+            // 기후성 성주의 성
+            get_first_n_chars(
+                &self.lords[self.castles[CastleEnum::Gifu as usize].owner as usize].family_name,
+                2
+            ),
+            // 오다와라성의 성 번호
+            CastleEnum::Odawara as usize,
+            // 오다와라성의 이름
+            get_first_n_chars(&self.castles[CastleEnum::Odawara as usize].name, 2),
+            // 오다와라성의 병력 수
+            self.castles[CastleEnum::Odawara as usize].troop_count,
+        );
+
+        // [6-2-11]지도의 10번째 행을 그린다
+        println!(
+            "～～～　　{:2}　　{:2}　～　　　{}{:2}{}　{:2}～～～～～",
+            // 요시다고리야마성의 성주의 성씨
+            get_first_n_chars(
+                &self.lords[self.castles[CastleEnum::Yoshidakoriyama as usize].owner as usize]
+                    .family_name,
+                2
+            ),
+            // 니조성 성주의 성씨
+            get_first_n_chars(
+                &self.lords[self.castles[CastleEnum::Nijo as usize].owner as usize].family_name,
+                2
+            ),
+            // 오카자키성의 성 번호
+            CastleEnum::Okazaki as usize,
+            // 오카자키성의 이름
+            get_first_n_chars(&self.castles[CastleEnum::Okazaki as usize].name, 2),
+            // 오카자키성의 병력 수
+            self.castles[CastleEnum::Okazaki as usize].troop_count,
+            // 오다와라성 성주의 성씨
+            get_first_n_chars(
+                &self.lords[self.castles[CastleEnum::Odawara as usize].owner as usize].family_name,
+                2
+            ),
+        );
+
+        // [6-2-12]지도의 11번째 행을 그린다
+        println!(
+            "～～　～～～～～～～　　　　～～{:2}～　～　～～～～～",
+            // 오카자키성 성주의 성씨
+            get_first_n_chars(
+                &self.lords[self.castles[CastleEnum::Okazaki as usize].owner as usize].family_name,
+                2
+            ),
+        );
+
+        // [6-2-13]지도의 12번째 행을 그린다
+        println!(
+            "～　　　～　{}{:2}{}　～　　　　～～～～～～～～～～～～",
+            // 오코성의 성 번호
+            CastleEnum::Oko as usize,
+            // 오코성의 이름
+            get_first_n_chars(&self.castles[CastleEnum::Oko as usize].name, 2),
+            // 오코성의 병력 수
+            self.castles[CastleEnum::Oko as usize].troop_count,
+        );
+
+        // [6-2-14]지도의 13번째 행을 그린다
+        println!(
+            "～　　　～　{:2}　～～　　～～～～～～～～～～～～～～",
+            // 오코성 성주의 성씨
+            get_first_n_chars(
+                &self.lords[self.castles[CastleEnum::Oko as usize].owner as usize].family_name,
+                2
+            ),
+        );
+
+        // [6-2-15]지도의 14번째 행을 그린다
+        println!(
+            "～{}{:2}{}～～～～～～～～～～～～～～～～～～～～～～～",
+            // 우찌성의 성 번호
+            CastleEnum::Uchi as usize,
+            // 우찌성의 이름
+            get_first_n_chars(&self.castles[CastleEnum::Uchi as usize].name, 2),
+            // 우찌성의 병력 수
+            self.castles[CastleEnum::Uchi as usize].troop_count,
+        );
+
+        // [6-2-16]지도의 15번째 행을 그린다
+        println!(
+            "～{:2}～～～～～～～～～～～～～～～～～～～～～～～～",
+            // 우찌성 성주의 성씨
+            get_first_n_chars(
+                &self.lords[self.castles[CastleEnum::Uchi as usize].owner as usize].family_name,
+                2
+            ),
+        );
+
+        // [6-2-17]지도의 16번째 행을 그린다
+        println!("～～～～～～～～～～～～～～～～～～～～～～～～～～～");
+
+        // [6-2-18]1행 비워둔다
+        println!();
     }
 }
 
