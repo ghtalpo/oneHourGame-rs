@@ -494,6 +494,7 @@ impl Context {
         }
         return true;
     }
+    pub fn draw_3d(&self) {}
 }
 
 fn main() {
@@ -503,6 +504,8 @@ fn main() {
 
     loop {
         clearscreen::clear().unwrap();
+
+        ctx.draw_3d();
 
         ctx.draw_map();
 
