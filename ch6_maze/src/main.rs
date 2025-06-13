@@ -29,6 +29,16 @@ impl TryFrom<usize> for DirectionEnum {
     }
 }
 
+enum LocationEnum {
+    FrontLeft = 0,
+    FrontRight,
+    Front,
+    Left,
+    Right,
+    Center,
+    Max,
+}
+
 #[derive(Clone, Copy)]
 struct Tile {
     walls: [bool; DirectionEnum::Max as usize],
@@ -94,10 +104,250 @@ impl Character {
     }
 }
 
+#[derive(Clone, Copy)]
+enum AAEnum {
+    All = 0,
+    FrontLeftNorth,
+    FrontRightNorth,
+    FrontNorth,
+    FrontWest,
+    FrontEast,
+    LeftNorth,
+    RightNorth,
+    North,
+    West,
+    East,
+    None,
+}
+
+impl TryFrom<usize> for AAEnum {
+    type Error = ();
+
+    fn try_from(v: usize) -> Result<Self, Self::Error> {
+        match v {
+            x if x == AAEnum::All as usize => Ok(AAEnum::All),
+            x if x == AAEnum::FrontLeftNorth as usize => Ok(AAEnum::FrontLeftNorth),
+            x if x == AAEnum::FrontRightNorth as usize => Ok(AAEnum::FrontRightNorth),
+            x if x == AAEnum::FrontNorth as usize => Ok(AAEnum::FrontNorth),
+            x if x == AAEnum::FrontWest as usize => Ok(AAEnum::FrontWest),
+            x if x == AAEnum::FrontEast as usize => Ok(AAEnum::FrontEast),
+            x if x == AAEnum::LeftNorth as usize => Ok(AAEnum::LeftNorth),
+            x if x == AAEnum::RightNorth as usize => Ok(AAEnum::RightNorth),
+            x if x == AAEnum::North as usize => Ok(AAEnum::North),
+            x if x == AAEnum::West as usize => Ok(AAEnum::West),
+            x if x == AAEnum::East as usize => Ok(AAEnum::East),
+            x if x == AAEnum::None as usize => Ok(AAEnum::None),
+            _ => Err(()),
+        }
+    }
+}
+
+struct Resource {
+    all: [String; 8],
+    front_left_north: [String; 8],
+    front_right_north: [String; 8],
+    front_north: [String; 8],
+    front_west: [String; 8],
+    front_east: [String; 8],
+    left_north: [String; 8],
+    right_north: [String; 8],
+    north: [String; 8],
+    west: [String; 8],
+    east: [String; 8],
+
+    aa_table: [[AAEnum; DirectionEnum::Max as usize]; LocationEnum::Max as usize],
+    locations: [[Vec2; LocationEnum::Max as usize]; DirectionEnum::Max as usize],
+}
+
+impl Resource {
+    pub fn new() -> Self {
+        Self {
+            all: [
+                "L0000000/\n".to_string(),
+                "#L00000/#\n".to_string(),
+                "#|L0 0/|#\n".to_string(),
+                "#|#|#|#|#\n".to_string(),
+                "#|#| |#|#\n".to_string(),
+                "#|/000L|#\n".to_string(),
+                "#/00000L#\n".to_string(),
+                "/0000000L\n".to_string(),
+            ],
+            front_left_north: [
+                "000000000\n".to_string(),
+                "000000000\n".to_string(),
+                "00_000000\n".to_string(),
+                "0|#|00000\n".to_string(),
+                "0|_|00000\n".to_string(),
+                "000000000\n".to_string(),
+                "000000000\n".to_string(),
+                "000000000\n".to_string(),
+            ],
+            front_right_north: [
+                "000000000\n".to_string(),
+                "000000000\n".to_string(),
+                "000000_00\n".to_string(),
+                "00000|#|0\n".to_string(),
+                "00000|_|0\n".to_string(),
+                "000000000\n".to_string(),
+                "000000000\n".to_string(),
+                "000000000\n".to_string(),
+            ],
+            front_north: [
+                "000000000\n".to_string(),
+                "000000000\n".to_string(),
+                "0000_0000\n".to_string(),
+                "000|#|000\n".to_string(),
+                "000|_|000\n".to_string(),
+                "000000000\n".to_string(),
+                "000000000\n".to_string(),
+                "000000000\n".to_string(),
+            ],
+            front_west: [
+                "000000000\n".to_string(),
+                "000000000\n".to_string(),
+                "0|L000000\n".to_string(),
+                "0|#|00000\n".to_string(),
+                "0|#|00000\n".to_string(),
+                "0|/000000\n".to_string(),
+                "000000000\n".to_string(),
+                "000000000\n".to_string(),
+            ],
+            front_east: [
+                "000000000\n".to_string(),
+                "000000000\n".to_string(),
+                "000000/|0\n".to_string(),
+                "00000|#|0\n".to_string(),
+                "00000|#|0\n".to_string(),
+                "000000L|0\n".to_string(),
+                "000000000\n".to_string(),
+                "000000000\n".to_string(),
+            ],
+            left_north: [
+                "000000000\n".to_string(),
+                "_00000000\n".to_string(),
+                "#|0000000\n".to_string(),
+                "#|0000000\n".to_string(),
+                "#|0000000\n".to_string(),
+                "_|0000000\n".to_string(),
+                "000000000\n".to_string(),
+                "000000000\n".to_string(),
+            ],
+            right_north: [
+                "000000000\n".to_string(),
+                "00000000_\n".to_string(),
+                "0000000|#\n".to_string(),
+                "0000000|#\n".to_string(),
+                "0000000|#\n".to_string(),
+                "0000000|_\n".to_string(),
+                "000000000\n".to_string(),
+                "000000000\n".to_string(),
+            ],
+            north: [
+                "000000000\n".to_string(),
+                "00_____00\n".to_string(),
+                "0|#####|0\n".to_string(),
+                "0|#####|0\n".to_string(),
+                "0|#####|0\n".to_string(),
+                "0|_____|0\n".to_string(),
+                "000000000\n".to_string(),
+                "000000000\n".to_string(),
+            ],
+            west: [
+                "L00000000\n".to_string(),
+                "#L0000000\n".to_string(),
+                "#|0000000\n".to_string(),
+                "#|0000000\n".to_string(),
+                "#|0000000\n".to_string(),
+                "#|0000000\n".to_string(),
+                "#/0000000\n".to_string(),
+                "/00000000\n".to_string(),
+            ],
+            east: [
+                "00000000/\n".to_string(),
+                "0000000/#\n".to_string(),
+                "0000000|#\n".to_string(),
+                "0000000|#\n".to_string(),
+                "0000000|#\n".to_string(),
+                "0000000|#\n".to_string(),
+                "0000000L#\n".to_string(),
+                "00000000L\n".to_string(),
+            ],
+
+            aa_table: [
+                // location_front_left
+                [
+                    AAEnum::FrontLeftNorth,
+                    AAEnum::None,
+                    AAEnum::None,
+                    AAEnum::None,
+                ],
+                // location_front_right
+                [
+                    AAEnum::FrontRightNorth,
+                    AAEnum::None,
+                    AAEnum::None,
+                    AAEnum::None,
+                ],
+                // location_front
+                [
+                    AAEnum::FrontNorth,
+                    AAEnum::FrontWest,
+                    AAEnum::None,
+                    AAEnum::FrontEast,
+                ],
+                // location_left
+                [AAEnum::LeftNorth, AAEnum::None, AAEnum::None, AAEnum::None],
+                // location_right
+                [AAEnum::RightNorth, AAEnum::None, AAEnum::None, AAEnum::None],
+                // location_center
+                [AAEnum::North, AAEnum::West, AAEnum::None, AAEnum::East],
+            ],
+            locations: [
+                // direction_north
+                [
+                    Vec2::new(-1, -1),
+                    Vec2::new(1, -1),
+                    Vec2::new(0, -1),
+                    Vec2::new(-1, 0),
+                    Vec2::new(1, 0),
+                    Vec2::new(0, 0),
+                ],
+                // direction_west
+                [
+                    Vec2::new(-1, 1),
+                    Vec2::new(-1, -1),
+                    Vec2::new(-1, 0),
+                    Vec2::new(0, 1),
+                    Vec2::new(0, -1),
+                    Vec2::new(0, 0),
+                ],
+                // direction_south
+                [
+                    Vec2::new(1, 1),
+                    Vec2::new(-1, 1),
+                    Vec2::new(0, 1),
+                    Vec2::new(1, 0),
+                    Vec2::new(-1, 0),
+                    Vec2::new(0, 0),
+                ],
+                // direction_east
+                [
+                    Vec2::new(1, -1),
+                    Vec2::new(1, 1),
+                    Vec2::new(1, 0),
+                    Vec2::new(0, -1),
+                    Vec2::new(0, 1),
+                    Vec2::new(0, 0),
+                ],
+            ],
+        }
+    }
+}
 struct Context {
     maze: [Tile; MAZE_HEIGHT * MAZE_WIDTH],
     directions: [Vec2; DirectionEnum::Max as usize],
     player: Character,
+    resource: Resource,
     g: Getch,
     rng: ThreadRng,
 }
@@ -114,6 +364,7 @@ impl Context {
             maze: [Tile::new(); MAZE_HEIGHT * MAZE_WIDTH],
             player: Character::new(),
             directions,
+            resource: Resource::new(),
             g: Getch::new(),
             rng: rand::rng(),
         }
