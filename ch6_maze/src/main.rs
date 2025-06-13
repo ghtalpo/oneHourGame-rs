@@ -435,7 +435,7 @@ impl Context {
 
             // [6-3-7]옆 방의 벽을 판다
             self.maze[next_position.y as usize * MAZE_WIDTH + next_position.x as usize].walls
-                [next_direction as usize] = false;
+                [next_direction] = false;
         }
     }
 
@@ -455,7 +455,7 @@ impl Context {
                 return false; // [6-4-6]파서는 안된다는 결과를 반환한다
             }
         }
-        return true; // [6-4-7]파도 좋다는 결과를 반환한다
+        true // [6-4-7]파도 좋다는 결과를 반환한다
     }
 
     // [6-5]미로를 랜덤으로 생성하는 함수를 선언한다
@@ -489,7 +489,7 @@ impl Context {
                 }
             }
 
-            if can_dig_directions.len() > 0 {
+            if !can_dig_directions.is_empty() {
                 // [6-5-14]파는 벽의 방위를 선언한다
                 let dig_direction = *can_dig_directions.choose(&mut self.rng).unwrap();
 
@@ -508,7 +508,7 @@ impl Context {
                 to_dig_wall_positions.remove(0);
 
                 // [6-5-20]벽을 파야 하는 칸 리스트가 비어 있는지 여부를 판정한다
-                if to_dig_wall_positions.len() <= 0 {
+                if to_dig_wall_positions.is_empty() {
                     break;
                 }
 
@@ -655,10 +655,10 @@ impl Context {
             }
         }
 
-        for k in 0..SCREEN_HEIGHT {
-            for l in 0..SCREEN_WIDTH {
+        for line in screen.iter() {
+            for ch in line.iter() {
                 // [6-7-16]화면 버퍼의 반각 문자를 전각 문자로 변환하여 그린다
-                match screen[k][l] {
+                match ch {
                     ' ' => print!(" "),
                     '#' => print!(" "),
                     '_' => print!("_"),
@@ -666,7 +666,7 @@ impl Context {
                     '/' => print!("/"),
                     'L' => print!("\\"),
                     // [6-7-23]상기 이외의 문자는 그대로 그린다
-                    _ => print!("{}", screen[k][l]),
+                    _ => print!("{}", ch),
                 }
             }
             println!();
