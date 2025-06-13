@@ -1,3 +1,6 @@
+use getch_rs::{Getch, Key};
+use rand::{Rng, rngs::ThreadRng};
+
 const TROOP_BASE: usize = 5;
 const START_YEAR: u16 = 1570;
 
@@ -73,6 +76,8 @@ struct Context {
     lords: [Lord; LordEnum::Max as usize],
     castles: [Castle; CastleEnum::Max as usize],
     year: u16,
+    rng: ThreadRng,
+    g: Getch,
 }
 
 impl Context {
@@ -103,6 +108,8 @@ impl Context {
                 Castle::new("우찌성", LordEnum::Simazu, TROOP_BASE),
             ],
             year: 0,
+            rng: rand::rng(),
+            g: Getch::new(),
         }
     }
 
@@ -330,5 +337,23 @@ impl Context {
 fn main() {
     let mut ctx = Context::new();
     ctx.init();
-    // loop {}
+    loop {
+        let mut turn_order = [0_usize; CastleEnum::Max as usize];
+        for i in 0..CastleEnum::Max as usize {
+            turn_order[i] = i;
+        }
+
+        for i in 0..CastleEnum::Max as usize {
+            turn_order.swap(i, ctx.rng.random_range(0..CastleEnum::Max as usize))
+        }
+
+        match ctx.g.getch() {
+            Ok(Key::Esc) => {
+                std::process::exit(0);
+            }
+            _ => {
+                return;
+            }
+        }
+    }
 }
