@@ -1,3 +1,5 @@
+use std::io;
+
 use getch_rs::{Getch, Key};
 use rand::{Rng, rngs::ThreadRng};
 
@@ -76,6 +78,7 @@ struct Context {
     lords: [Lord; LordEnum::Max as usize],
     castles: [Castle; CastleEnum::Max as usize],
     year: u16,
+    player_lord: LordEnum,
     rng: ThreadRng,
     g: Getch,
 }
@@ -108,6 +111,7 @@ impl Context {
                 Castle::new("우찌성", LordEnum::Simazu, TROOP_BASE),
             ],
             year: 0,
+            player_lord: LordEnum::Max,
             rng: rand::rng(),
             g: Getch::new(),
         }
@@ -338,6 +342,41 @@ impl Context {
 fn main() {
     let mut ctx = Context::new();
     ctx.init();
+
+    println!(
+        "주군님, 우리 성은\n\
+        이 지도의 어디에 있습니까? (0~{})]\n",
+        CastleEnum::Max as usize - 1,
+    );
+
+    let mut selected_castle: usize;
+    loop {
+        // selected_castle =
+        let mut input = String::new();
+        io::stdin().read_line(&mut input).expect("입력 오류");
+
+        selected_castle = input.trim().parse().expect("숫자 파싱 오류");
+
+        if selected_castle < CastleEnum::Max as usize {
+            break;
+        }
+    }
+
+    ctx.player_lord = ctx.castles[selected_castle].owner;
+
+    println!(
+        "{}님, {}에서 천하 통일을\n\
+        목표로 합시다!",
+        ctx.lords[ctx.player_lord as usize].first_name, ctx.castles[ctx.player_lord as usize].name
+    );
+
+    match ctx.g.getch() {
+        Ok(Key::Esc) => {
+            std::process::exit(0);
+        }
+        _ => {}
+    }
+
     loop {
         let mut turn_order = [0_usize; CastleEnum::Max as usize];
         for i in 0..CastleEnum::Max as usize {
