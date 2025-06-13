@@ -54,14 +54,21 @@ struct Castle {
     name: String,
     owner: LordEnum,
     troop_count: usize,
+    connected_castles: Vec<CastleEnum>,
 }
 
 impl Castle {
-    pub fn new(name: &str, owner: LordEnum, troop_count: usize) -> Self {
+    pub fn new(
+        name: &str,
+        owner: LordEnum,
+        troop_count: usize,
+        connected_castles: Vec<CastleEnum>,
+    ) -> Self {
         Self {
             name: name.to_string(),
             owner,
             troop_count,
+            connected_castles,
         }
     }
 }
@@ -99,16 +106,94 @@ impl Context {
                 Lord::new("시마즈", "요시히사"),
             ],
             castles: [
-                Castle::new("요네자와성", LordEnum::Date, TROOP_BASE),
-                Castle::new("가스가야마성", LordEnum::Uesugi, TROOP_BASE),
-                Castle::new("쓰쓰지가사키관", LordEnum::Takeda, TROOP_BASE),
-                Castle::new("오다와라성", LordEnum::Hojo, TROOP_BASE),
-                Castle::new("오카자키성", LordEnum::Tokugawa, TROOP_BASE),
-                Castle::new("기후성", LordEnum::Oda, TROOP_BASE),
-                Castle::new("니조성", LordEnum::Ashikaga, TROOP_BASE),
-                Castle::new("요시다고리야마성", LordEnum::Mori, TROOP_BASE),
-                Castle::new("오코성", LordEnum::Chosokabe, TROOP_BASE),
-                Castle::new("우찌성", LordEnum::Simazu, TROOP_BASE),
+                Castle::new(
+                    "요네자와성",
+                    LordEnum::Date,
+                    TROOP_BASE,
+                    vec![CastleEnum::Kasugayama, CastleEnum::Odawara],
+                ),
+                Castle::new(
+                    "가스가야마성",
+                    LordEnum::Uesugi,
+                    TROOP_BASE,
+                    vec![
+                        CastleEnum::Yonezawa,
+                        CastleEnum::Tsutsujigasaki,
+                        CastleEnum::Gifu,
+                    ],
+                ),
+                Castle::new(
+                    "쓰쓰지가사키관",
+                    LordEnum::Takeda,
+                    TROOP_BASE,
+                    vec![
+                        CastleEnum::Kasugayama,
+                        CastleEnum::Odawara,
+                        CastleEnum::Okazaki,
+                    ],
+                ),
+                Castle::new(
+                    "오다와라성",
+                    LordEnum::Hojo,
+                    TROOP_BASE,
+                    vec![
+                        CastleEnum::Yonezawa,
+                        CastleEnum::Tsutsujigasaki,
+                        CastleEnum::Okazaki,
+                    ],
+                ),
+                Castle::new(
+                    "오카자키성",
+                    LordEnum::Tokugawa,
+                    TROOP_BASE,
+                    vec![
+                        CastleEnum::Tsutsujigasaki,
+                        CastleEnum::Odawara,
+                        CastleEnum::Gifu,
+                    ],
+                ),
+                Castle::new(
+                    "기후성",
+                    LordEnum::Oda,
+                    TROOP_BASE,
+                    vec![
+                        CastleEnum::Kasugayama,
+                        CastleEnum::Okazaki,
+                        CastleEnum::Nijo,
+                    ],
+                ),
+                Castle::new(
+                    "니조성",
+                    LordEnum::Ashikaga,
+                    TROOP_BASE,
+                    vec![
+                        CastleEnum::Gifu,
+                        CastleEnum::Yoshidakoriyama,
+                        CastleEnum::Oko,
+                    ],
+                ),
+                Castle::new(
+                    "요시다고리야마성",
+                    LordEnum::Mori,
+                    TROOP_BASE,
+                    vec![CastleEnum::Nijo, CastleEnum::Oko, CastleEnum::Uchi],
+                ),
+                Castle::new(
+                    "오코성",
+                    LordEnum::Chosokabe,
+                    TROOP_BASE,
+                    vec![
+                        CastleEnum::Nijo,
+                        CastleEnum::Yoshidakoriyama,
+                        CastleEnum::Uchi,
+                    ],
+                ),
+                Castle::new(
+                    "우찌성",
+                    LordEnum::Simazu,
+                    TROOP_BASE,
+                    vec![CastleEnum::Yoshidakoriyama, CastleEnum::Oko],
+                ),
             ],
             year: 0,
             player_lord: LordEnum::Max,
