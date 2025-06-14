@@ -934,6 +934,12 @@ fn main() {
                                     ctx.castles[current_castle].troop_count + 1 - TROOP_BASE,
                                 );
                             }
+
+                            // overflow 수정: 현재 주의 병력 이상을 보내는 경우
+                            send_troop_count = std::cmp::min(
+                                send_troop_count,
+                                ctx.castles[current_castle].troop_count,
+                            );
                         }
 
                         // [6-5-85]보내는 병력이 있는지 여부를 판정한다
