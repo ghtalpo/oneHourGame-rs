@@ -16,16 +16,16 @@ const START_YEAR: u16 = 1570; // [2-4]시작 연도를 정의한다
 // [3-1]다이묘의 종류를 정의한다
 #[derive(Clone, Copy, PartialEq)]
 enum LordEnum {
-    Date = 0,  // [3-1- 1]다테 테루무네
-    Uesugi,    // [3-1- 2]우에스기 겐신
-    Takeda,    // [3-1- 3]다케다 신겐
-    Hojo,      // [3-1- 4]호조 우지마사
-    Tokugawa,  // [3-1- 5]도쿠가와 이에야스
-    Oda,       // [3-1- 6]오다 노부나가
-    Ashikaga,  // [3-1- 7]아시카가 요시아키
-    Mori,      // [3-1- 8]모리 모토나리
-    Chosokabe, // [3-1- 9]조소카베 모토치카
-    Simazu,    // [3-1-10]시마즈 요시히사
+    Igak = 0,// [3-1- 1] 이각 
+    Yubi,    // [3-1- 2] 유비
+    Wonso,    // [3-1- 3] 원소
+    Jojo,      // [3-1- 4] 조조
+    Yeopo,  // [3-1- 5] 여포
+    Yupyo,       // [3-1- 6] 유표
+    Sonchaek,  // [3-1- 7] 손책
+    Yujang,      // [3-1- 8] 유장
+    Madeung, // [3-1- 9] 마등
+    Gongsonchan,    // [3-1-10] 공손찬
     Max,       // [3-1-11]종류의 개수
 }
 
@@ -34,16 +34,16 @@ impl TryFrom<usize> for LordEnum {
 
     fn try_from(v: usize) -> Result<Self, Self::Error> {
         match v {
-            x if x == LordEnum::Date as usize => Ok(LordEnum::Date),
-            x if x == LordEnum::Uesugi as usize => Ok(LordEnum::Uesugi),
-            x if x == LordEnum::Takeda as usize => Ok(LordEnum::Takeda),
-            x if x == LordEnum::Hojo as usize => Ok(LordEnum::Hojo),
-            x if x == LordEnum::Tokugawa as usize => Ok(LordEnum::Tokugawa),
-            x if x == LordEnum::Oda as usize => Ok(LordEnum::Oda),
-            x if x == LordEnum::Ashikaga as usize => Ok(LordEnum::Ashikaga),
-            x if x == LordEnum::Mori as usize => Ok(LordEnum::Mori),
-            x if x == LordEnum::Chosokabe as usize => Ok(LordEnum::Chosokabe),
-            x if x == LordEnum::Simazu as usize => Ok(LordEnum::Simazu),
+            x if x == LordEnum::Igak as usize => Ok(LordEnum::Igak),
+            x if x == LordEnum::Yubi as usize => Ok(LordEnum::Yubi),
+            x if x == LordEnum::Wonso as usize => Ok(LordEnum::Wonso),
+            x if x == LordEnum::Jojo as usize => Ok(LordEnum::Jojo),
+            x if x == LordEnum::Yeopo as usize => Ok(LordEnum::Yeopo),
+            x if x == LordEnum::Yupyo as usize => Ok(LordEnum::Yupyo),
+            x if x == LordEnum::Sonchaek as usize => Ok(LordEnum::Sonchaek),
+            x if x == LordEnum::Yujang as usize => Ok(LordEnum::Yujang),
+            x if x == LordEnum::Madeung as usize => Ok(LordEnum::Madeung),
+            x if x == LordEnum::Gongsonchan as usize => Ok(LordEnum::Gongsonchan),
             _ => Err(()),
         }
     }
@@ -145,16 +145,16 @@ impl Context {
         Self {
             // [5-1]다이묘 배열을 선언한다
             lords: [
-                Lord::new("다테", "테루무네"),
-                Lord::new("우에스기", "겐신"),
-                Lord::new("다케다", "신겐"),
-                Lord::new("호조", "우지마사"),
-                Lord::new("도쿠가와", "이에야스"),
-                Lord::new("오다", "노부나가"),
-                Lord::new("아시카가", "요시아키"),
-                Lord::new("모리", "모토나리"),
-                Lord::new("조소카베", "모토치카"),
-                Lord::new("시마즈", "요시히사"),
+                Lord::new("이각", "치연"),
+                Lord::new("유비", "현덕"),
+                Lord::new("원소", "본초"),
+                Lord::new("조조", "맹덕"),
+                Lord::new("여포", "봉선"),
+                Lord::new("유표", "경승"),
+                Lord::new("손책", "백부"),
+                Lord::new("유장", "계옥"),
+                Lord::new("마등", "수성"),
+                Lord::new("공손찬", "백규"),
             ],
             // [5-2]성 배열을 선언한다
             castles: [
