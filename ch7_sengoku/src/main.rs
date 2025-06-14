@@ -810,6 +810,8 @@ fn main() {
         if ctx.get_castle_count(ctx.player_lord) <= 0 {
             ctx.draw_screen();
 
+            println!("{}", ctx.chronology);
+
             println!("");
 
             println!("GAME OVER");
