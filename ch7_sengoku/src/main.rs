@@ -446,6 +446,10 @@ impl Context {
             } else {
                 offensive_troop_count -= 1;
             }
+
+            if offensive_troop_count <= 0 || self.castles[castle].troop_count <= 0 {
+                break;
+            }
         }
         self.pause_a_key();
     }
