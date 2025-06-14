@@ -439,19 +439,43 @@ impl Context {
                 self.lords[defensive_lord as usize].family_name,
                 self.castles[castle].troop_count * TROOP_UNIT,
             );
-            self.pause_a_key();
+
+            if offensive_troop_count <= 0 || self.castles[castle].troop_count <= 0 {
+                break;
+            }
 
             if self.rng.random_range(0..3) == 0 {
                 self.castles[castle].troop_count -= 1;
             } else {
                 offensive_troop_count -= 1;
             }
-
-            if offensive_troop_count <= 0 || self.castles[castle].troop_count <= 0 {
-                break;
-            }
         }
         self.pause_a_key();
+
+        println!();
+
+        if self.castles[castle].troop_count <= 0 {
+            println!("{} 함락!!\n", self.castles[castle].name,);
+
+            self.castles[castle].owner = offensive_lord;
+
+            self.castles[castle].troop_count = offensive_troop_count;
+
+            println!(
+                "{}은(는) {} 가문의 것이 됩니다.\n",
+                self.castles[castle].name, self.lords[offensive_lord as usize].family_name
+            );
+        } else {
+            println!(
+                "{}군 전멸!!\n",
+                self.lords[offensive_lord as usize].family_name
+            );
+
+            println!(
+                "{}군이 {}을(를) 지켜냈습니다!",
+                self.lords[defensive_lord as usize].family_name, self.castles[castle].name,
+            );
+        }
     }
 
     fn pause_a_key(&self) {
