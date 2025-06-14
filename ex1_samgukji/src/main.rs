@@ -7,7 +7,7 @@ use rand::{Rng, rngs::ThreadRng, seq::IndexedRandom};
 
 const TROOP_BASE: usize = 5; // [2-1]기본 병력 수를 정의한다
 const TROOP_MAX: usize = 9; // [2-2]최대 병력 수를 정의한다
-const TROOP_UNIT: usize = 1000; // [2-3]병력 수 단위를 정의한다
+const TROOP_UNIT: usize = 10000; // [2-3]병력 수 단위를 정의한다
 const START_YEAR: u16 = 196; // [2-4]시작 연도를 정의한다
 // const CHRONOLOGY_MAX: usize = 1024;
 
@@ -695,7 +695,7 @@ impl Context {
         loop {
             // [6-4-6]전투의 경과를 표시한다
             println!(
-                "{}군({:4}명) X {}군({:4}명)\n",
+                "{}군({:5}명) X {}군({:5}명)\n",
                 self.lords[offensive_lord as usize].family_name,
                 offensive_troop_count * TROOP_UNIT,
                 self.lords[defensive_lord as usize].family_name,
@@ -880,7 +880,7 @@ fn main() {
 
                     // [6-5-40]입력된 성을 통지하고, 이동하는 병력 수의 입력을 촉구하는 메시지를 표시한다
                     println!(
-                        "{}에 몇 명 진군하시겠습니까?(0-{})",
+                        "{}에 몇 만명 진군하시겠습니까?(0-{})",
                         ctx.castles[current_castle].name, troop_max
                     );
 
