@@ -1,7 +1,7 @@
 use std::io;
 
 use getch_rs::{Getch, Key};
-use rand::{Rng, rngs::ThreadRng};
+use rand::{Rng, rngs::ThreadRng, seq::IndexedRandom};
 
 const TROOP_BASE: usize = 5;
 const TROOP_MAX: usize = 9;
@@ -23,7 +23,7 @@ enum LordEnum {
     Max,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 enum CastleEnum {
     Yonezawa = 0,
     Kasugayama,
@@ -489,12 +489,21 @@ impl Context {
 }
 
 fn input_number() -> usize {
-    let mut input = String::new();
-    io::stdin().read_line(&mut input).expect("입력 오류");
+    loop {
+        let mut input = String::new();
+        match io::stdin().read_line(&mut input) {
+            Err(_) => continue,
+            _ => {}
+        }
 
-    let num: usize = input.trim().parse().expect("숫자 파싱 오류");
-    println!("{}", num);
-    num
+        let num = match input.trim().parse::<usize>() {
+            Ok(num) => num,
+            _ => continue,
+        };
+
+        println!("{}", num);
+        return num;
+    }
 }
 
 fn main() {
@@ -659,8 +668,50 @@ fn main() {
                             .push(ctx.castles[current_castle].connected_castles[j]);
                     }
                 }
-            }
 
+                if connected_enemy_castles.len() > 0 {
+                    connected_enemy_castles.sort_by(|a, b| {
+                        ctx.castles[*a as usize]
+                            .troop_count
+                            .cmp(&ctx.castles[*b as usize].troop_count)
+                    });
+
+                    while connected_enemy_castles.len() > 1
+                        && ctx.castles[connected_enemy_castles[0] as usize].troop_count
+                            < ctx.castles[connected_enemy_castles[connected_enemy_castles.len() - 1]
+                                as usize]
+                                .troop_count
+                    {
+                        connected_enemy_castles.pop().unwrap();
+                    }
+
+                    let target_castle =
+                        *connected_enemy_castles.choose(&mut ctx.rng).unwrap() as usize;
+                    if ctx.castles[current_castle].troop_count >= TROOP_BASE
+                        || (ctx.castles[current_castle].troop_count - 1
+                            >= ctx.castles[target_castle].troop_count * 2)
+                    {
+                        let troop_count =
+                            std::cmp::max(ctx.castles[current_castle].troop_count - 1, 0);
+
+                        ctx.castles[current_castle].troop_count -= troop_count;
+
+                        println!(
+                            "{}의 {}{}이(가) {}에 공격해 들어왔습니다!",
+                            ctx.castles[current_castle].name,
+                            ctx.lords[ctx.castles[current_castle].owner as usize].family_name,
+                            ctx.lords[ctx.castles[current_castle].owner as usize].first_name,
+                            ctx.castles[target_castle].name,
+                        );
+
+                        ctx.siege(
+                            ctx.castles[current_castle].owner,
+                            troop_count,
+                            target_castle,
+                        );
+                    }
+                }
+            }
             ctx.pause_a_key();
         }
         ctx.year += 1;
