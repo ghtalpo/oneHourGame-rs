@@ -905,6 +905,28 @@ fn main() {
                     ctx.castles[i].troop_count -= 1;
                 }
             }
+
+            if ctx.year == 1582 && ctx.castles[CastleEnum::Nijo as usize].owner == LordEnum::Oda {
+                ctx.draw_screen();
+
+                println!(
+                    "아케치 미쓰히데 [적은 혼노지에 있다!]\n\
+                    \n\
+                    아케치 미쓰히데가 혼노지의 오다 노부나가를 습격했다!\n\
+                    \n\
+                    오다 노부나가 [할 수 없지...]\n\
+                    \n\
+                    오다 노부나가는 혼노지에서 자결했다!\n\
+                    \n\
+                    후일, 하시바 히데요시가 야마자키 전투에서 아케치 미쓰히데를 물리치고,\n\
+                    오다 가문 후계의 영토를 찬탈했다!"
+                );
+
+                ctx.lords[LordEnum::Oda as usize].family_name = "하시바".to_string();
+                ctx.lords[LordEnum::Oda as usize].first_name = "히데요시".to_string();
+
+                ctx.pause_a_key();
+            }
         }
     }
 }
