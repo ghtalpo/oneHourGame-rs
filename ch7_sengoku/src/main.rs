@@ -425,11 +425,28 @@ impl Context {
         println!();
     }
 
-    fn siege(&self, offensive_lord: LordEnum, offensive_troop_count: usize, castle: usize) {
+    fn siege(&mut self, offensive_lord: LordEnum, mut offensive_troop_count: usize, castle: usize) {
         clearscreen::clear().unwrap();
 
         println!("~{} 전투~\n", self.castles[castle].name);
 
+        let defensive_lord = self.castles[castle].owner;
+        loop {
+            println!(
+                "{}군({:4}명) X {}군({:4}명)\n",
+                self.lords[offensive_lord as usize].family_name,
+                offensive_troop_count * TROOP_UNIT,
+                self.lords[defensive_lord as usize].family_name,
+                self.castles[castle].troop_count * TROOP_UNIT,
+            );
+            self.pause_a_key();
+
+            if self.rng.random_range(0..3) == 0 {
+                self.castles[castle].troop_count -= 1;
+            } else {
+                offensive_troop_count -= 1;
+            }
+        }
         self.pause_a_key();
     }
 
