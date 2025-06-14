@@ -118,7 +118,9 @@ fn get_first_n_chars(s: &str, n: usize) -> String {
 fn input_number() -> usize {
     loop {
         let mut input = String::new();
-        if io::stdin().read_line(&mut input).is_err() { continue }
+        if io::stdin().read_line(&mut input).is_err() {
+            continue;
+        }
 
         let num = match input.trim().parse::<usize>() {
             Ok(num) => num,
@@ -635,7 +637,7 @@ fn main() {
             // [6-5-7]턴 순서를 초기화한다
             // for i in 0..CastleEnum::Max as usize {
             for (i, turn) in turn_order.iter_mut().enumerate() {
-                    *turn = i;
+                *turn = i;
             }
 
             for i in 0..CastleEnum::Max as usize {
@@ -652,10 +654,7 @@ fn main() {
                     print!("{}", if j == i { ">" } else { " " },);
 
                     // [6-5-15]각 턴의 성 이름을 그린다
-                    print!(
-                        "{:2}",
-                        get_first_n_chars(&ctx.castles[*castle].name, 2),
-                    );
+                    print!("{:2}", get_first_n_chars(&ctx.castles[*castle].name, 2),);
                 }
 
                 println!("\n");
@@ -1017,11 +1016,10 @@ fn main() {
             }
 
             // [6-5-109]「혼노지의 변」이벤트가 발생하는 조건을 마족하고 있는지 여부를 판정한다
-            if 
-                // 1582년이다
-                ctx.year == 1582 
-                // 그리고 오다 가문이 니조성을 소유하고 있다
-                && ctx.castles[CastleEnum::Nijo as usize].owner == LordEnum::Oda {
+            if ctx.year == 1582             // 1582년이다
+                && ctx.castles[CastleEnum::Nijo as usize].owner == LordEnum::Oda
+            // 그리고 오다 가문이 니조성을 소유하고 있다
+            {
                 // [6-5-110]오다 가문 다이묘의 성을「하시바」로 변경한다
                 ctx.lords[LordEnum::Oda as usize].family_name = "하시바".to_string();
 
