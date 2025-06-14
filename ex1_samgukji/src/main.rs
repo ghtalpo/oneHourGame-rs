@@ -651,7 +651,7 @@ impl Context {
 
         // [6-3-7]다이묘 선택을 촉구하는 메시지를 표시한다
         println!(
-            "주군님, 우리 성은\n\
+            "폐하, 우리 성은\n\
             이 지도의 어디에 있습니까? (0~{})\n",
             CastleEnum::Max as usize - 1,
         );
@@ -740,7 +740,7 @@ impl Context {
             if self.get_castle_count(defensive_lord) == 0 {
                 // [6-4-25]연표에 문자열을 추가한다
                 self.chronology.push_str(&format!(
-                    "{}년 {}{}이(가) {}에서 {}{}을(를) 멸망시키다.\n",
+                    "{}년 {}({})이(가) {}에서 {}({})을(를) 멸망시키다.\n",
                     self.year,
                     self.lords[offensive_lord as usize].family_name,
                     self.lords[offensive_lord as usize].first_name,
@@ -989,7 +989,7 @@ fn main() {
 
                             // [6-5-65]공격하는 메시지를 표시한다
                             println!(
-                                "{}의 {}{}이(가) {}에 공격해 들어왔습니다!",
+                                "{}의 {}({})이(가) {}에 공격해 들어왔습니다!",
                                 ctx.castles[current_castle].name,
                                 ctx.lords[ctx.castles[current_castle].owner as usize].family_name,
                                 ctx.lords[ctx.castles[current_castle].owner as usize].first_name,
@@ -1124,17 +1124,12 @@ fn main() {
 
                     // [6-5-100]엔딩 메시지를 표시한다
                     println!(
-                        "{}년 {}{}이(가) 정이대장군에 임명된다\n\
-                        {}년 {}{}이(가) {}막부를 연다\n\
+                        "{}년 {}({})이(가) 천하를 통일한다\n\
                         \n\
                         THE END",
-                        ctx.year + 3,
+                        ctx.year,
                         ctx.lords[ctx.player_lord as usize].family_name,
                         ctx.lords[ctx.player_lord as usize].first_name,
-                        ctx.year + 3,
-                        ctx.lords[ctx.player_lord as usize].family_name,
-                        ctx.lords[ctx.player_lord as usize].first_name,
-                        ctx.lords[ctx.player_lord as usize].family_name,
                     );
 
                     ctx.pause_a_key();
