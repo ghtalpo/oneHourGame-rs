@@ -24,6 +24,26 @@ enum LordEnum {
     Max,
 }
 
+impl TryFrom<usize> for LordEnum {
+    type Error = ();
+
+    fn try_from(v: usize) -> Result<Self, Self::Error> {
+        match v {
+            x if x == LordEnum::Date as usize => Ok(LordEnum::Date),
+            x if x == LordEnum::Uesugi as usize => Ok(LordEnum::Uesugi),
+            x if x == LordEnum::Takeda as usize => Ok(LordEnum::Takeda),
+            x if x == LordEnum::Hojo as usize => Ok(LordEnum::Hojo),
+            x if x == LordEnum::Tokugawa as usize => Ok(LordEnum::Tokugawa),
+            x if x == LordEnum::Oda as usize => Ok(LordEnum::Oda),
+            x if x == LordEnum::Ashikaga as usize => Ok(LordEnum::Ashikaga),
+            x if x == LordEnum::Mori as usize => Ok(LordEnum::Mori),
+            x if x == LordEnum::Chosokabe as usize => Ok(LordEnum::Chosokabe),
+            x if x == LordEnum::Simazu as usize => Ok(LordEnum::Simazu),
+            _ => Err(()),
+        }
+    }
+}
+
 #[derive(Clone, Copy, Debug)]
 enum CastleEnum {
     Yonezawa = 0,
@@ -38,6 +58,26 @@ enum CastleEnum {
     Uchi,
     Max,
 }
+
+// impl TryFrom<usize> for CastleEnum {
+//     type Error = ();
+
+//     fn try_from(v: usize) -> Result<Self, Self::Error> {
+//         match v {
+//             x if x == CastleEnum::Yonezawa as usize => Ok(CastleEnum::Yonezawa),
+//             x if x == CastleEnum::Kasugayama as usize => Ok(CastleEnum::Kasugayama),
+//             x if x == CastleEnum::Tsutsujigasaki as usize => Ok(CastleEnum::Tsutsujigasaki),
+//             x if x == CastleEnum::Odawara as usize => Ok(CastleEnum::Odawara),
+//             x if x == CastleEnum::Okazaki as usize => Ok(CastleEnum::Okazaki),
+//             x if x == CastleEnum::Gifu as usize => Ok(CastleEnum::Gifu),
+//             x if x == CastleEnum::Nijo as usize => Ok(CastleEnum::Nijo),
+//             x if x == CastleEnum::Yoshidakoriyama as usize => Ok(CastleEnum::Yoshidakoriyama),
+//             x if x == CastleEnum::Oko as usize => Ok(CastleEnum::Oko),
+//             x if x == CastleEnum::Uchi as usize => Ok(CastleEnum::Uchi),
+//             _ => Err(()),
+//         }
+//     }
+// }
 
 struct Lord {
     family_name: String,
@@ -209,6 +249,12 @@ impl Context {
 
     pub fn init(&mut self) {
         self.year = START_YEAR;
+
+        for i in 0..CastleEnum::Max as usize {
+            self.castles[i].owner = i.try_into().unwrap();
+
+            self.castles[i].troop_count = TROOP_BASE;
+        }
 
         self.chronology.clear();
 
@@ -536,295 +582,306 @@ fn input_number() -> usize {
 
 fn main() {
     let mut ctx = Context::new();
-    ctx.init();
 
-    println!(
-        "주군님, 우리 성은\n\
-        이 지도의 어디에 있습니까? (0~{})]\n",
-        CastleEnum::Max as usize - 1,
-    );
+    'start: loop {
+        ctx.init();
 
-    let mut selected_castle: usize;
-    loop {
-        selected_castle = input_number();
+        println!(
+            "주군님, 우리 성은\n\
+            이 지도의 어디에 있습니까? (0~{})]\n",
+            CastleEnum::Max as usize - 1,
+        );
 
-        if selected_castle < CastleEnum::Max as usize {
-            break;
-        }
-    }
+        let mut selected_castle: usize;
+        loop {
+            selected_castle = input_number();
 
-    ctx.player_lord = ctx.castles[selected_castle].owner;
-
-    println!(
-        "{}님, {}에서 천하 통일을\n\
-        목표로 합시다!",
-        ctx.lords[ctx.player_lord as usize].first_name, ctx.castles[ctx.player_lord as usize].name
-    );
-
-    ctx.pause_a_key();
-
-    loop {
-        let mut turn_order = [0_usize; CastleEnum::Max as usize];
-        for i in 0..CastleEnum::Max as usize {
-            turn_order[i] = i;
+            if selected_castle < CastleEnum::Max as usize {
+                break;
+            }
         }
 
-        for i in 0..CastleEnum::Max as usize {
-            turn_order.swap(i, ctx.rng.random_range(0..CastleEnum::Max as usize))
-        }
+        ctx.player_lord = ctx.castles[selected_castle].owner;
 
-        for i in 0..CastleEnum::Max as usize {
-            ctx.draw_screen();
+        println!(
+            "{}님, {}에서 천하 통일을\n\
+            목표로 합시다!",
+            ctx.lords[ctx.player_lord as usize].first_name,
+            ctx.castles[ctx.player_lord as usize].name
+        );
 
-            for j in 0..CastleEnum::Max as usize {
-                print!("{}", if j == i { ">" } else { " " },);
-                print!(
-                    "{:2}",
-                    get_first_n_chars(&ctx.castles[turn_order[j]].name, 2),
-                );
+        ctx.pause_a_key();
+
+        loop {
+            let mut turn_order = [0_usize; CastleEnum::Max as usize];
+            for i in 0..CastleEnum::Max as usize {
+                turn_order[i] = i;
             }
 
-            println!("\n");
+            for i in 0..CastleEnum::Max as usize {
+                turn_order.swap(i, ctx.rng.random_range(0..CastleEnum::Max as usize))
+            }
 
-            let current_castle = turn_order[i];
+            for i in 0..CastleEnum::Max as usize {
+                ctx.draw_screen();
 
-            ctx.pause_a_key();
-
-            println!(
-                "{} 가문의 {} 전략회의...",
-                ctx.lords[ctx.castles[current_castle].owner as usize].family_name,
-                ctx.castles[current_castle].name,
-            );
-
-            if ctx.castles[current_castle].owner == ctx.player_lord {
-                println!(
-                    "{}님, 어디로 진군하시겠습니까?",
-                    ctx.lords[ctx.castles[current_castle].owner as usize].first_name,
-                );
-                for j in 0..ctx.castles[current_castle].connected_castles.len() {
-                    println!(
-                        "{} {}",
-                        *ctx.castles[current_castle]
-                            .connected_castles
-                            .get(j)
-                            .unwrap() as usize,
-                        ctx.castles[*ctx.castles[current_castle]
-                            .connected_castles
-                            .get(j)
-                            .unwrap() as usize]
-                            .name,
+                for j in 0..CastleEnum::Max as usize {
+                    print!("{}", if j == i { ">" } else { " " },);
+                    print!(
+                        "{:2}",
+                        get_first_n_chars(&ctx.castles[turn_order[j]].name, 2),
                     );
                 }
 
-                println!("");
+                println!("\n");
 
-                let target_castle: usize = input_number();
+                let current_castle = turn_order[i];
 
                 ctx.pause_a_key();
 
-                let mut is_connected = false;
-
-                for castle in ctx.castles[current_castle].connected_castles.iter() {
-                    if *castle as usize == target_castle {
-                        is_connected = true;
-
-                        break;
-                    }
-                }
-
-                if !is_connected {
-                    println!("진군을 취소했습니다.");
-
-                    ctx.pause_a_key();
-
-                    continue;
-                }
-
-                let mut troop_max = ctx.castles[current_castle].troop_count;
-
-                if ctx.castles[target_castle].owner == ctx.player_lord {
-                    let target_capacity = TROOP_MAX - ctx.castles[target_castle].troop_count;
-
-                    troop_max = std::cmp::min(troop_max, target_capacity);
-                } else {
-                }
                 println!(
-                    "{}에 몇 명 진군하시겠습니까?(0-{})",
-                    ctx.castles[current_castle].name, troop_max
+                    "{} 가문의 {} 전략회의...",
+                    ctx.lords[ctx.castles[current_castle].owner as usize].family_name,
+                    ctx.castles[current_castle].name,
                 );
 
-                let mut troop_count;
-
-                loop {
-                    troop_count = input_number();
-                    if troop_count <= troop_max {
-                        break;
-                    }
-                }
-
-                ctx.castles[current_castle].troop_count -= troop_count;
-
-                if ctx.castles[target_castle].owner == ctx.player_lord {
-                    ctx.castles[target_castle].troop_count += troop_count;
-                }
-                println!();
-
-                println!(
-                    "{}에 {}명{}",
-                    ctx.castles[target_castle].name,
-                    troop_count * TROOP_UNIT,
-                    if ctx.castles[target_castle].owner == ctx.player_lord {
-                        " 이동했습니다."
-                    } else {
-                        "으로 출진이다~!!"
-                    }
-                );
-
-                if ctx.castles[target_castle].owner != ctx.player_lord {
-                    ctx.pause_a_key();
-
-                    ctx.siege(ctx.player_lord, troop_count, target_castle);
-                }
-            } else {
-                let mut connected_enemy_castles = Vec::new();
-
-                for j in 0..ctx.castles[current_castle].connected_castles.len() {
-                    if ctx.castles[ctx.castles[current_castle].connected_castles[j] as usize].owner
-                        != ctx.castles[current_castle].owner
-                    {
-                        connected_enemy_castles
-                            .push(ctx.castles[current_castle].connected_castles[j]);
-                    }
-                }
-
-                if connected_enemy_castles.len() > 0 {
-                    connected_enemy_castles.sort_by(|a, b| {
-                        ctx.castles[*a as usize]
-                            .troop_count
-                            .cmp(&ctx.castles[*b as usize].troop_count)
-                    });
-
-                    while connected_enemy_castles.len() > 1
-                        && ctx.castles[connected_enemy_castles[0] as usize].troop_count
-                            < ctx.castles[connected_enemy_castles[connected_enemy_castles.len() - 1]
-                                as usize]
-                                .troop_count
-                    {
-                        connected_enemy_castles.pop().unwrap();
-                    }
-
-                    let target_castle =
-                        *connected_enemy_castles.choose(&mut ctx.rng).unwrap() as usize;
-                    if ctx.castles[current_castle].troop_count >= TROOP_BASE
-                        || (ctx.castles[current_castle].troop_count - 1
-                            >= ctx.castles[target_castle].troop_count * 2)
-                    {
-                        let troop_count =
-                            std::cmp::max(ctx.castles[current_castle].troop_count - 1, 0);
-
-                        ctx.castles[current_castle].troop_count -= troop_count;
-
+                if ctx.castles[current_castle].owner == ctx.player_lord {
+                    println!(
+                        "{}님, 어디로 진군하시겠습니까?",
+                        ctx.lords[ctx.castles[current_castle].owner as usize].first_name,
+                    );
+                    for j in 0..ctx.castles[current_castle].connected_castles.len() {
                         println!(
-                            "{}의 {}{}이(가) {}에 공격해 들어왔습니다!",
-                            ctx.castles[current_castle].name,
-                            ctx.lords[ctx.castles[current_castle].owner as usize].family_name,
-                            ctx.lords[ctx.castles[current_castle].owner as usize].first_name,
-                            ctx.castles[target_castle].name,
-                        );
-
-                        ctx.siege(
-                            ctx.castles[current_castle].owner,
-                            troop_count,
-                            target_castle,
+                            "{} {}",
+                            *ctx.castles[current_castle]
+                                .connected_castles
+                                .get(j)
+                                .unwrap() as usize,
+                            ctx.castles[*ctx.castles[current_castle]
+                                .connected_castles
+                                .get(j)
+                                .unwrap() as usize]
+                                .name,
                         );
                     }
-                } else {
-                    let mut front_castles = Vec::new();
 
-                    for neighbor in &ctx.castles[current_castle].connected_castles {
-                        for neighbor_neighbor in &ctx.castles[*neighbor as usize].connected_castles
-                        {
-                            if ctx.castles[*neighbor_neighbor as usize].owner
-                                != ctx.castles[*neighbor as usize].owner
-                            {
-                                front_castles.push(*neighbor);
-                                break;
-                            }
+                    println!("");
+
+                    let target_castle: usize = input_number();
+
+                    ctx.pause_a_key();
+
+                    let mut is_connected = false;
+
+                    for castle in ctx.castles[current_castle].connected_castles.iter() {
+                        if *castle as usize == target_castle {
+                            is_connected = true;
+
+                            break;
                         }
                     }
 
-                    let mut dest_castles = if front_castles.is_empty() {
-                        ctx.castles[current_castle].connected_castles.clone()
-                    } else {
-                        front_castles.clone()
-                    };
+                    if !is_connected {
+                        println!("진군을 취소했습니다.");
 
-                    dest_castles.sort_by(|a, b| {
-                        ctx.castles[*a as usize]
-                            .troop_count
-                            .cmp(&ctx.castles[*b as usize].troop_count)
-                    });
+                        ctx.pause_a_key();
 
-                    while dest_castles.len() > 1
-                        && ctx.castles[dest_castles[0] as usize].troop_count
-                            < ctx.castles[dest_castles[dest_castles.len() - 1] as usize].troop_count
-                    {
-                        dest_castles.pop().unwrap();
+                        continue;
                     }
 
-                    let target_castle = *dest_castles.choose(&mut ctx.rng).unwrap() as usize;
+                    let mut troop_max = ctx.castles[current_castle].troop_count;
 
-                    let mut send_troop_count = TROOP_MAX - ctx.castles[target_castle].troop_count;
+                    if ctx.castles[target_castle].owner == ctx.player_lord {
+                        let target_capacity = TROOP_MAX - ctx.castles[target_castle].troop_count;
 
-                    if !front_castles.is_empty() {
-                        send_troop_count = std::cmp::min(
-                            send_troop_count,
-                            ctx.castles[current_castle].troop_count,
-                        );
+                        troop_max = std::cmp::min(troop_max, target_capacity);
                     } else {
-                        if ctx.castles[current_castle].troop_count + 1 >= TROOP_BASE {
+                    }
+                    println!(
+                        "{}에 몇 명 진군하시겠습니까?(0-{})",
+                        ctx.castles[current_castle].name, troop_max
+                    );
+
+                    let mut troop_count;
+
+                    loop {
+                        troop_count = input_number();
+                        if troop_count <= troop_max {
+                            break;
+                        }
+                    }
+
+                    ctx.castles[current_castle].troop_count -= troop_count;
+
+                    if ctx.castles[target_castle].owner == ctx.player_lord {
+                        ctx.castles[target_castle].troop_count += troop_count;
+                    }
+                    println!();
+
+                    println!(
+                        "{}에 {}명{}",
+                        ctx.castles[target_castle].name,
+                        troop_count * TROOP_UNIT,
+                        if ctx.castles[target_castle].owner == ctx.player_lord {
+                            " 이동했습니다."
+                        } else {
+                            "으로 출진이다~!!"
+                        }
+                    );
+
+                    if ctx.castles[target_castle].owner != ctx.player_lord {
+                        ctx.pause_a_key();
+
+                        ctx.siege(ctx.player_lord, troop_count, target_castle);
+                    }
+                } else {
+                    let mut connected_enemy_castles = Vec::new();
+
+                    for j in 0..ctx.castles[current_castle].connected_castles.len() {
+                        if ctx.castles[ctx.castles[current_castle].connected_castles[j] as usize]
+                            .owner
+                            != ctx.castles[current_castle].owner
+                        {
+                            connected_enemy_castles
+                                .push(ctx.castles[current_castle].connected_castles[j]);
+                        }
+                    }
+
+                    if connected_enemy_castles.len() > 0 {
+                        connected_enemy_castles.sort_by(|a, b| {
+                            ctx.castles[*a as usize]
+                                .troop_count
+                                .cmp(&ctx.castles[*b as usize].troop_count)
+                        });
+
+                        while connected_enemy_castles.len() > 1
+                            && ctx.castles[connected_enemy_castles[0] as usize].troop_count
+                                < ctx.castles[connected_enemy_castles
+                                    [connected_enemy_castles.len() - 1]
+                                    as usize]
+                                    .troop_count
+                        {
+                            connected_enemy_castles.pop().unwrap();
+                        }
+
+                        let target_castle =
+                            *connected_enemy_castles.choose(&mut ctx.rng).unwrap() as usize;
+                        if ctx.castles[current_castle].troop_count >= TROOP_BASE
+                            || (ctx.castles[current_castle].troop_count - 1
+                                >= ctx.castles[target_castle].troop_count * 2)
+                        {
+                            let troop_count =
+                                std::cmp::max(ctx.castles[current_castle].troop_count - 1, 0);
+
+                            ctx.castles[current_castle].troop_count -= troop_count;
+
+                            println!(
+                                "{}의 {}{}이(가) {}에 공격해 들어왔습니다!",
+                                ctx.castles[current_castle].name,
+                                ctx.lords[ctx.castles[current_castle].owner as usize].family_name,
+                                ctx.lords[ctx.castles[current_castle].owner as usize].first_name,
+                                ctx.castles[target_castle].name,
+                            );
+
+                            ctx.siege(
+                                ctx.castles[current_castle].owner,
+                                troop_count,
+                                target_castle,
+                            );
+                        }
+                    } else {
+                        let mut front_castles = Vec::new();
+
+                        for neighbor in &ctx.castles[current_castle].connected_castles {
+                            for neighbor_neighbor in
+                                &ctx.castles[*neighbor as usize].connected_castles
+                            {
+                                if ctx.castles[*neighbor_neighbor as usize].owner
+                                    != ctx.castles[*neighbor as usize].owner
+                                {
+                                    front_castles.push(*neighbor);
+                                    break;
+                                }
+                            }
+                        }
+
+                        let mut dest_castles = if front_castles.is_empty() {
+                            ctx.castles[current_castle].connected_castles.clone()
+                        } else {
+                            front_castles.clone()
+                        };
+
+                        dest_castles.sort_by(|a, b| {
+                            ctx.castles[*a as usize]
+                                .troop_count
+                                .cmp(&ctx.castles[*b as usize].troop_count)
+                        });
+
+                        while dest_castles.len() > 1
+                            && ctx.castles[dest_castles[0] as usize].troop_count
+                                < ctx.castles[dest_castles[dest_castles.len() - 1] as usize]
+                                    .troop_count
+                        {
+                            dest_castles.pop().unwrap();
+                        }
+
+                        let target_castle = *dest_castles.choose(&mut ctx.rng).unwrap() as usize;
+
+                        let mut send_troop_count =
+                            TROOP_MAX - ctx.castles[target_castle].troop_count;
+
+                        if !front_castles.is_empty() {
                             send_troop_count = std::cmp::min(
                                 send_troop_count,
-                                ctx.castles[current_castle].troop_count + 1 - TROOP_BASE,
+                                ctx.castles[current_castle].troop_count,
+                            );
+                        } else {
+                            if ctx.castles[current_castle].troop_count + 1 >= TROOP_BASE {
+                                send_troop_count = std::cmp::min(
+                                    send_troop_count,
+                                    ctx.castles[current_castle].troop_count + 1 - TROOP_BASE,
+                                );
+                            }
+                        }
+
+                        if send_troop_count > 0 {
+                            ctx.castles[current_castle].troop_count -= send_troop_count;
+
+                            ctx.castles[target_castle].troop_count += send_troop_count;
+
+                            println!(
+                                "{}에서 {}로 {}명 이동했습니다!",
+                                ctx.castles[current_castle].name,
+                                ctx.castles[target_castle].name,
+                                send_troop_count * TROOP_UNIT,
                             );
                         }
                     }
-
-                    if send_troop_count > 0 {
-                        ctx.castles[current_castle].troop_count -= send_troop_count;
-
-                        ctx.castles[target_castle].troop_count += send_troop_count;
-
-                        println!(
-                            "{}에서 {}로 {}명 이동했습니다!",
-                            ctx.castles[current_castle].name,
-                            ctx.castles[target_castle].name,
-                            send_troop_count * TROOP_UNIT,
-                        );
-                    }
                 }
+                ctx.pause_a_key();
             }
-            ctx.pause_a_key();
-        }
 
-        if ctx.get_castle_count(ctx.player_lord) <= 0 {
-            ctx.draw_screen();
+            if ctx.get_castle_count(ctx.player_lord) <= 0 {
+                ctx.draw_screen();
 
-            println!("{}", ctx.chronology);
+                println!("{}", ctx.chronology);
 
-            println!("");
+                println!("");
 
-            println!("GAME OVER");
+                println!("GAME OVER");
 
-            ctx.pause_a_key();
-        }
-        ctx.year += 1;
+                ctx.pause_a_key();
 
-        for i in 0..CastleEnum::Max as usize {
-            if ctx.castles[i].troop_count < TROOP_BASE {
-                ctx.castles[i].troop_count += 1;
-            } else if ctx.castles[i].troop_count > TROOP_BASE {
-                ctx.castles[i].troop_count -= 1;
+                continue 'start;
+            }
+            ctx.year += 1;
+
+            for i in 0..CastleEnum::Max as usize {
+                if ctx.castles[i].troop_count < TROOP_BASE {
+                    ctx.castles[i].troop_count += 1;
+                } else if ctx.castles[i].troop_count > TROOP_BASE {
+                    ctx.castles[i].troop_count -= 1;
+                }
             }
         }
     }
