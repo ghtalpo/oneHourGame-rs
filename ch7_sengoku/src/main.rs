@@ -710,6 +710,68 @@ fn main() {
                             target_castle,
                         );
                     }
+                } else {
+                    let mut front_castles = Vec::new();
+
+                    for neighbor in &ctx.castles[current_castle].connected_castles {
+                        for neighbor_neighbor in &ctx.castles[*neighbor as usize].connected_castles
+                        {
+                            if ctx.castles[*neighbor_neighbor as usize].owner
+                                != ctx.castles[*neighbor as usize].owner
+                            {
+                                front_castles.push(*neighbor);
+                                break;
+                            }
+                        }
+                    }
+
+                    let mut dest_castles = if front_castles.is_empty() {
+                        ctx.castles[current_castle].connected_castles.clone()
+                    } else {
+                        front_castles.clone()
+                    };
+
+                    dest_castles.sort_by(|a, b| {
+                        ctx.castles[*a as usize]
+                            .troop_count
+                            .cmp(&ctx.castles[*b as usize].troop_count)
+                    });
+
+                    while dest_castles.len() > 1
+                        && ctx.castles[dest_castles[0] as usize].troop_count
+                            < ctx.castles[dest_castles[dest_castles.len() - 1] as usize].troop_count
+                    {
+                        dest_castles.pop().unwrap();
+                    }
+
+                    let target_castle = *dest_castles.choose(&mut ctx.rng).unwrap() as usize;
+
+                    let mut send_troop_count = TROOP_MAX - ctx.castles[target_castle].troop_count;
+
+                    if !front_castles.is_empty() {
+                        send_troop_count = std::cmp::min(
+                            send_troop_count,
+                            ctx.castles[current_castle].troop_count,
+                        );
+                    } else {
+                        send_troop_count = std::cmp::min(
+                            send_troop_count,
+                            ctx.castles[current_castle].troop_count - (TROOP_BASE - 1),
+                        );
+                    }
+
+                    if send_troop_count > 0 {
+                        ctx.castles[current_castle].troop_count -= send_troop_count;
+
+                        ctx.castles[target_castle].troop_count += send_troop_count;
+
+                        println!(
+                            "{}에서 {}로 {}명 이동했습니다!",
+                            ctx.castles[current_castle].name,
+                            ctx.castles[target_castle].name,
+                            send_troop_count * TROOP_UNIT,
+                        );
+                    }
                 }
             }
             ctx.pause_a_key();
