@@ -424,6 +424,23 @@ impl Context {
         // [6-2-18]1행 비워둔다
         println!();
     }
+
+    fn siege(&self, offensive_lord: LordEnum, offensive_troop_count: usize, castle: usize) {
+        clearscreen::clear().unwrap();
+
+        println!("~{} 전투~\n", self.castles[castle].name);
+
+        self.pause_a_key();
+    }
+
+    fn pause_a_key(&self) {
+        match self.g.getch() {
+            Ok(Key::Esc) => {
+                std::process::exit(0);
+            }
+            _ => {}
+        }
+    }
 }
 
 fn input_number() -> usize {
@@ -462,12 +479,7 @@ fn main() {
         ctx.lords[ctx.player_lord as usize].first_name, ctx.castles[ctx.player_lord as usize].name
     );
 
-    match ctx.g.getch() {
-        Ok(Key::Esc) => {
-            std::process::exit(0);
-        }
-        _ => {}
-    }
+    ctx.pause_a_key();
 
     loop {
         let mut turn_order = [0_usize; CastleEnum::Max as usize];
@@ -494,12 +506,7 @@ fn main() {
 
             let current_castle = turn_order[i];
 
-            match ctx.g.getch() {
-                Ok(Key::Esc) => {
-                    std::process::exit(0);
-                }
-                _ => {}
-            }
+            ctx.pause_a_key();
 
             println!(
                 "{} 가문의 {} 전략회의...",
@@ -531,12 +538,7 @@ fn main() {
 
                 let target_castle: usize = input_number();
 
-                match ctx.g.getch() {
-                    Ok(Key::Esc) => {
-                        std::process::exit(0);
-                    }
-                    _ => {}
-                }
+                ctx.pause_a_key();
 
                 let mut is_connected = false;
 
@@ -551,12 +553,7 @@ fn main() {
                 if !is_connected {
                     println!("진군을 취소했습니다.");
 
-                    match ctx.g.getch() {
-                        Ok(Key::Esc) => {
-                            std::process::exit(0);
-                        }
-                        _ => {}
-                    }
+                    ctx.pause_a_key();
 
                     continue;
                 }
@@ -599,15 +596,16 @@ fn main() {
                     } else {
                         "으로 출진이다~!!"
                     }
-                )
+                );
+
+                if ctx.castles[target_castle].owner != ctx.player_lord {
+                    ctx.pause_a_key();
+
+                    ctx.siege(ctx.player_lord, troop_count, target_castle);
+                }
             }
 
-            match ctx.g.getch() {
-                Ok(Key::Esc) => {
-                    std::process::exit(0);
-                }
-                _ => {}
-            }
+            ctx.pause_a_key();
         }
         ctx.year += 1;
     }
