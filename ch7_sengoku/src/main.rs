@@ -1,9 +1,11 @@
-use std::{io, thread::current};
+use std::io;
 
 use getch_rs::{Getch, Key};
 use rand::{Rng, rngs::ThreadRng};
 
 const TROOP_BASE: usize = 5;
+const TROOP_MAX: usize = 9;
+const TROOP_UNIT: usize = 1000;
 const START_YEAR: u16 = 1570;
 
 #[derive(Clone, Copy, PartialEq)]
@@ -529,6 +531,13 @@ fn main() {
 
                 let target_castle: usize = input_number();
 
+                match ctx.g.getch() {
+                    Ok(Key::Esc) => {
+                        std::process::exit(0);
+                    }
+                    _ => {}
+                }
+
                 let mut is_connected = false;
 
                 for castle in ctx.castles[current_castle].connected_castles.iter() {
@@ -551,7 +560,46 @@ fn main() {
 
                     continue;
                 }
-            } else {
+
+                let mut troop_max = ctx.castles[current_castle].troop_count;
+
+                if ctx.castles[target_castle].owner == ctx.player_lord {
+                    let target_capacity = TROOP_MAX - ctx.castles[target_castle].troop_count;
+
+                    troop_max = std::cmp::min(troop_max, target_capacity);
+                } else {
+                }
+                println!(
+                    "{}에 몇 명 진군하시겠습니까?(0-{})",
+                    ctx.castles[current_castle].name, troop_max
+                );
+
+                let mut troop_count;
+
+                loop {
+                    troop_count = input_number();
+                    if troop_count <= troop_max {
+                        break;
+                    }
+                }
+
+                ctx.castles[current_castle].troop_count -= troop_count;
+
+                if ctx.castles[target_castle].owner == ctx.player_lord {
+                    ctx.castles[target_castle].troop_count += troop_count;
+                }
+                println!();
+
+                println!(
+                    "{}에 {}명{}",
+                    ctx.castles[target_castle].name,
+                    troop_count * TROOP_UNIT,
+                    if ctx.castles[target_castle].owner == ctx.player_lord {
+                        " 이동했습니다."
+                    } else {
+                        "으로 출진이다~!!"
+                    }
+                )
             }
 
             match ctx.g.getch() {
