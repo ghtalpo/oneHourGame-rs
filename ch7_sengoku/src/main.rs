@@ -873,6 +873,28 @@ fn main() {
                 ctx.pause_a_key();
 
                 continue 'start;
+            } else if ctx.get_castle_count(ctx.player_lord) >= CastleEnum::Max as usize {
+                ctx.draw_screen();
+
+                println!("{}", ctx.chronology);
+
+                println!(
+                    "{}년 {}{}이(가) 정이대장군에 임명된다\n\
+                    {}년 {}{}이(가) {}막부를 연다\n\
+                    \n\
+                    THE END",
+                    ctx.year + 3,
+                    ctx.lords[ctx.player_lord as usize].family_name,
+                    ctx.lords[ctx.player_lord as usize].first_name,
+                    ctx.year + 3,
+                    ctx.lords[ctx.player_lord as usize].family_name,
+                    ctx.lords[ctx.player_lord as usize].first_name,
+                    ctx.lords[ctx.player_lord as usize].family_name,
+                );
+
+                ctx.pause_a_key();
+
+                continue 'start;
             }
             ctx.year += 1;
 
