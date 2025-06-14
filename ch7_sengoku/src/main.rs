@@ -648,6 +648,17 @@ fn main() {
 
                     ctx.siege(ctx.player_lord, troop_count, target_castle);
                 }
+            } else {
+                let mut connected_enemy_castles = Vec::new();
+
+                for j in 0..ctx.castles[current_castle].connected_castles.len() {
+                    if ctx.castles[ctx.castles[current_castle].connected_castles[j] as usize].owner
+                        != ctx.castles[current_castle].owner
+                    {
+                        connected_enemy_castles
+                            .push(ctx.castles[current_castle].connected_castles[j]);
+                    }
+                }
             }
 
             ctx.pause_a_key();
