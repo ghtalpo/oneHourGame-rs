@@ -8,7 +8,7 @@ use rand::{Rng, rngs::ThreadRng, seq::IndexedRandom};
 const TROOP_BASE: usize = 5; // [2-1]기본 병력 수를 정의한다
 const TROOP_MAX: usize = 9; // [2-2]최대 병력 수를 정의한다
 const TROOP_UNIT: usize = 1000; // [2-3]병력 수 단위를 정의한다
-const START_YEAR: u16 = 1570; // [2-4]시작 연도를 정의한다
+const START_YEAR: u16 = 196; // [2-4]시작 연도를 정의한다
 // const CHRONOLOGY_MAX: usize = 1024;
 
 // [3]열거 상수를 정의하는 곳
@@ -113,6 +113,10 @@ fn get_first_n_chars(s: &str, n: usize) -> String {
         Some(index) => s[..index.0].to_string(),
         None => s.to_string(),
     }
+}
+
+fn get_first_2_chars(s: &str) -> String {
+    get_first_n_chars(s, 2)
 }
 
 fn input_number() -> usize {
@@ -245,24 +249,161 @@ impl Context {
     fn draw_screen(&self) {
         clearscreen::clear().unwrap();
 
+        // println!(
+        //     " 196년　　　　　　　　　　9유주5　　　  \n\
+        // 　　　　　　　　　　　　　공손　　～　～\n\
+        // 8량주5　　　　　　2기주5　　　～～～～～\n\
+        // 마등　　　　　　　원소　　～～～～～～～\n\
+        // 　　　　　　　　　　　　　　～～　　～～\n\
+        // 　　　　　　　　　3연주5　　　　　～～～\n\
+        // 　　　0사예5　　　조조　　4서주5　～～～\n\
+        // 　　　이각　　　　　　　　여포　～～～～\n\
+        // 　　　　　　　　　1예주5　　　　　～～～\n\
+        // 　　　　　　　　　유비　　　　　　　～～\n\
+        // 7익주5　　5형주5　　　　6양주5　　　～～\n\
+        // 유장　　　유표　　　　　손책　　　　～～\n\
+        // 　　　　　　　　　　　　　　　　　～～～\n\
+        // 　　　　　　　　　　　　　　　　　～～～\n\
+        // 　　　　　　　　　　　　　　　～～～～～\n\
+        // 　　　　　　　　　～～～～～～～～～～～\n",
+        // );
+
+        // [6-2-2]지도의 1번째 행을 그린다
+
         println!(
-            " 196년　　　　　　　　　　9유주5　　　  \n\
-        　　　　　　　　　　　　　공손　　～　～\n\
-        8량주5　　　　　　2기주5　　　～～～～～\n\
-        마등　　　　　　　원소　　～～～～～～～\n\
-        　　　　　　　　　　　　　　～～　　～～\n\
-        　　　　　　　　　3연주5　　　　　～～～\n\
-        　　　0사예5　　　조조　　4서주5　～～～\n\
-        　　　이각　　　　　　　　여포　～～～～\n\
-        　　　　　　　　　1예주5　　　　　～～～\n\
-        　　　　　　　　　유비　　　　　　　～～\n\
-        7익주5　　5형주5　　　　6양주5　　　～～\n\
-        유장　　　유표　　　　　손책　　　　～～\n\
-        　　　　　　　　　　　　　　　　　～～～\n\
-        　　　　　　　　　　　　　　　　　～～～\n\
-        　　　　　　　　　　　　　　　～～～～～\n\
-        　　　　　　　　　～～～～～～～～～～～\n",
-        );
+            " {}년  　　　　　　　　　　{}{:2}{}　　　",
+            self.year,                                    // 연도
+            CastleEnum::Yuju as usize,                    // 유주의 주 번호
+            self.castles[CastleEnum::Yuju as usize].name, // 유주의 이름
+            self.castles[CastleEnum::Yuju as usize].troop_count,
+        ); // 유주의 병력 수
+
+        // [6-2-3]지도의 2번째 행을 그린다
+        println!(
+            "　　　　　　　　　　　　　　{:2}　～　～",
+            get_first_2_chars(
+                &self.lords[self.castles[CastleEnum::Yuju as usize].owner as usize].family_name
+            ),
+        ); // 유주 주목의 성명
+
+        // [6-2-4]지도의 3번째 행을 그린다
+        println!(
+            "{}{:2}{}　　　　　　{}{:2}{}　　　～～～～～",
+            CastleEnum::Ryangju as usize, // 량주의 주 번호
+            self.castles[CastleEnum::Ryangju as usize].name, // 량주의 이름
+            self.castles[CastleEnum::Ryangju as usize].troop_count, // 량주의 병력 수
+            CastleEnum::Giju as usize,    // 기주의 주 번호
+            self.castles[CastleEnum::Giju as usize].name, // 기주의 이름
+            self.castles[CastleEnum::Giju as usize].troop_count,
+        ); // 기주의 병력 수
+
+        // [6-2-5]지도의 4번째 행을 그린다
+        println!(
+            "{:2}　　　　　　　{:2}　　～～～～～～～",
+            get_first_2_chars(
+                &self.lords[self.castles[CastleEnum::Ryangju as usize].owner as usize].family_name
+            ), // 량주 주목의 성명
+            get_first_2_chars(
+                &self.lords[self.castles[CastleEnum::Giju as usize].owner as usize].family_name
+            ),
+        ); // 기주 주목의 성명
+
+        // [6-2-6]지도의 5번째 행을 그린다
+        println!("　　　　　　　　　　　　　　～～　　～～");
+
+        // [6-2-7]지도의 6번째 행을 그린다
+        println!(
+            "　　　　　　　　　{}{:2}{}　　　　　～～～",
+            CastleEnum::Yeonju as usize, // 연주의 주 번호
+            self.castles[CastleEnum::Yeonju as usize].name, // 연주의 이름
+            self.castles[CastleEnum::Yeonju as usize].troop_count,
+        ); // 연주의 병력 수
+
+        // [6-2-8]지도의 7번째 행을 그린다
+        println!(
+            "　　　{}{:2}{}　　　{:2}　　{}{:2}{}　～～～",
+            CastleEnum::Saye as usize,                    // 사예의 주 번호
+            self.castles[CastleEnum::Saye as usize].name, // 사예의 이름
+            self.castles[CastleEnum::Saye as usize].troop_count, // 사예의 병력 수
+            get_first_2_chars(
+                &self.lords[self.castles[CastleEnum::Yeonju as usize].owner as usize].family_name
+            ), // 연주 주목의 성명
+            CastleEnum::Seoju as usize,                   // 서주의 주 번호
+            self.castles[CastleEnum::Seoju as usize].name, // 서주의 이름
+            self.castles[CastleEnum::Seoju as usize].troop_count,
+        ); // 서주의 병력 수
+
+        // [6-2-9]지도의 8번째 행을 그린다
+        println!(
+            "　　　{:2}　　　　　　　　{:2}　～～～～",
+            get_first_2_chars(
+                &self.lords[self.castles[CastleEnum::Saye as usize].owner as usize].family_name
+            ), // 사예 주목의 성명
+            get_first_2_chars(
+                &self.lords[self.castles[CastleEnum::Seoju as usize].owner as usize].family_name
+            ),
+        ); // 서주 주목의 성명
+
+        // [6-2-10]지도의 9번째 행을 그린다
+        println!(
+            "　　　　　　　　　{}{:2}{}　　　　～～～～",
+            CastleEnum::Yeju as usize,                    // 예주의 주 번호
+            self.castles[CastleEnum::Yeju as usize].name, // 예주의 이름
+            self.castles[CastleEnum::Yeju as usize].troop_count,
+        ); // 예주의 병력 수
+
+        // [6-2-11]지도의 10번째 행을 그린다
+        println!(
+            "　　　　　　　　　{:2}　　　　　　～～～",
+            get_first_2_chars(
+                &self.lords[self.castles[CastleEnum::Yeju as usize].owner as usize].family_name
+            ),
+        ); // 예주 주목의 성명
+
+        // [6-2-12]지도의 11번째 행을 그린다
+        println!(
+            "　　　　　{}{:2}{}　　　　　　{}{:2}{}　～～",
+            CastleEnum::Hyeongju as usize, // 형주의 주 번호
+            self.castles[CastleEnum::Hyeongju as usize].name, // 형주의 이름
+            self.castles[CastleEnum::Hyeongju as usize].troop_count, // 형주의 병력 수
+            CastleEnum::Yangju as usize,   // 양주의 주 번호
+            self.castles[CastleEnum::Yangju as usize].name, // 양주의 이름
+            self.castles[CastleEnum::Yangju as usize].troop_count,
+        ); // 양주의 병력 수
+
+        // [6-2-13]지도의 12번째 행을 그린다
+        println!(
+            "{}{:2}{}　　{:2}　　　　　　　{:2}　　～～",
+            CastleEnum::Ikju as usize,                    // 익주의 주 번호
+            self.castles[CastleEnum::Ikju as usize].name, // 익주의 이름
+            self.castles[CastleEnum::Ikju as usize].troop_count, // 익주의 병력 수
+            get_first_2_chars(
+                &self.lords[self.castles[CastleEnum::Hyeongju as usize].owner as usize].family_name
+            ), // 형주 주목의 성명
+            get_first_2_chars(
+                &self.lords[self.castles[CastleEnum::Yangju as usize].owner as usize].family_name
+            ),
+        ); // 양주 주목의 성명
+
+        // [6-2-14]지도의 13번째 행을 그린다
+        println!(
+            "{:2}　　　　　　　　　　　　　　　　～～",
+            get_first_2_chars(
+                &self.lords[self.castles[CastleEnum::Ikju as usize].owner as usize].family_name
+            ),
+        ); // 익주 주목의 성명
+
+        // [6-2-15]지도의 14번째 행을 그린다
+        println!("　　　　　　　　　　　　　　　　　　～～");
+
+        // [6-2-16]지도의 15번째 행을 그린다
+        println!("　　　　　　　　　　　　　　　　～～～～");
+
+        // [6-2-17]지도의 16번째 행을 그린다
+        println!("　　　　　　　　　～～～～～～～～～～～");
+
+        // [6-2-18]1행 비워둔다
+        println!();
 
         // // [6-2-2]지도의 1번째 행을 그린다
         // println!(
