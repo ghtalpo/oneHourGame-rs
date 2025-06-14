@@ -118,10 +118,7 @@ fn get_first_n_chars(s: &str, n: usize) -> String {
 fn input_number() -> usize {
     loop {
         let mut input = String::new();
-        match io::stdin().read_line(&mut input) {
-            Err(_) => continue,
-            _ => {}
-        }
+        if io::stdin().read_line(&mut input).is_err() { continue }
 
         let num = match input.trim().parse::<usize>() {
             Ok(num) => num,
@@ -559,7 +556,7 @@ impl Context {
             self.pause_a_key();
 
             // [6-4-8]공격과 수비 중 어느 한쪽의 병력 수가 0이하인지 여부를 판정한다
-            if offensive_troop_count <= 0 || self.castles[castle].troop_count <= 0 {
+            if offensive_troop_count == 0 || self.castles[castle].troop_count == 0 {
                 break;
             }
 
@@ -574,7 +571,7 @@ impl Context {
         println!();
 
         // [6-4-15]수비 측의 병력이 전멸했는지 여부를 판정한다
-        if self.castles[castle].troop_count <= 0 {
+        if self.castles[castle].troop_count == 0 {
             // [6-4-16]성이 함락되었다는 메시지를 표시한다
             println!("{} 함락!!\n", self.castles[castle].name,);
 
@@ -591,7 +588,7 @@ impl Context {
             );
 
             // [6-4-22]수비 측의 다이묘가 성을 모두 잃었는지 여부를 판정한
-            if self.get_castle_count(defensive_lord) <= 0 {
+            if self.get_castle_count(defensive_lord) == 0 {
                 // [6-4-25]연표에 문자열을 추가한다
                 self.chronology.push_str(&format!(
                     "{}년 {}{}이(가) {}에서 {}{}을(를) 멸망시키다.\n",
@@ -618,11 +615,8 @@ impl Context {
     }
 
     fn pause_a_key(&self) {
-        match self.g.getch() {
-            Ok(Key::Esc) => {
-                std::process::exit(0);
-            }
-            _ => {}
+        if let Ok(Key::Esc) = self.g.getch() {
+            std::process::exit(0);
         }
     }
 }
@@ -639,8 +633,9 @@ fn main() {
             let mut turn_order = [0_usize; CastleEnum::Max as usize]; // [6-5-6]턴 순서의 테이블을 선언한다
 
             // [6-5-7]턴 순서를 초기화한다
-            for i in 0..CastleEnum::Max as usize {
-                turn_order[i] = i;
+            // for i in 0..CastleEnum::Max as usize {
+            for (i, turn) in turn_order.iter_mut().enumerate() {
+                    *turn = i;
             }
 
             for i in 0..CastleEnum::Max as usize {
@@ -652,14 +647,14 @@ fn main() {
             for i in 0..CastleEnum::Max as usize {
                 ctx.draw_screen();
 
-                for j in 0..CastleEnum::Max as usize {
+                for (j, castle) in turn_order.iter().enumerate() {
                     // [6-5-14]현재 턴의 성에 커서를 그린다
                     print!("{}", if j == i { ">" } else { " " },);
 
                     // [6-5-15]각 턴의 성 이름을 그린다
                     print!(
                         "{:2}",
-                        get_first_n_chars(&ctx.castles[turn_order[j]].name, 2),
+                        get_first_n_chars(&ctx.castles[*castle].name, 2),
                     );
                 }
 
@@ -699,7 +694,7 @@ fn main() {
                         );
                     }
 
-                    println!("");
+                    println!();
 
                     // [6-5-26]진군 목표의 성을 입력하여 선언한다
                     let target_castle: usize = input_number();
@@ -805,7 +800,7 @@ fn main() {
                     }
 
                     // [6-5-57]연결된 적의 성이 있는지 여부를 판정한다
-                    if connected_enemy_castles.len() > 0 {
+                    if !connected_enemy_castles.is_empty() {
                         // [6-5-58]병력이 적은 순으로 정렬한다
                         connected_enemy_castles.sort_by(|a, b| {
                             ctx.castles[*a as usize]
@@ -837,8 +832,7 @@ fn main() {
                         // 병력 수가 기준치 이상인가
                         ctx.castles[current_castle].troop_count >= TROOP_BASE
                             // 이쪽의 병력 수가 수비병을 제하고 상대의 2배이상이면
-                            || (ctx.castles[current_castle].troop_count - 1
-                                >= ctx.castles[target_castle].troop_count * 2)
+                            || (ctx.castles[current_castle].troop_count > ctx.castles[target_castle].troop_count * 2)
                         {
                             // [6-5-63]공격하는 병력 수를 선언한다
                             let troop_count =
@@ -963,12 +957,12 @@ fn main() {
                 ctx.pause_a_key();
 
                 // [6-5-90]플레이어의 성이 없는지 여부를 판정한다
-                if ctx.get_castle_count(ctx.player_lord) <= 0 {
+                if ctx.get_castle_count(ctx.player_lord) == 0 {
                     ctx.draw_screen();
 
                     println!("{}", ctx.chronology);
 
-                    println!("");
+                    println!();
 
                     println!("GAME OVER");
 
