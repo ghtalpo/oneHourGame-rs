@@ -777,5 +777,13 @@ fn main() {
             ctx.pause_a_key();
         }
         ctx.year += 1;
+
+        for i in 0..CastleEnum::Max as usize {
+            if ctx.castles[i].troop_count < TROOP_BASE {
+                ctx.castles[i].troop_count += 1;
+            } else if ctx.castles[i].troop_count > TROOP_BASE {
+                ctx.castles[i].troop_count -= 1;
+            }
+        }
     }
 }
