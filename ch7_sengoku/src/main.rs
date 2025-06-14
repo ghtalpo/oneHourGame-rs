@@ -486,6 +486,17 @@ impl Context {
             _ => {}
         }
     }
+
+    fn get_castle_count(&self, lord: LordEnum) -> usize {
+        let mut castle_count = 0;
+
+        for i in 0..CastleEnum::Max as usize {
+            if self.castles[i].owner == lord {
+                castle_count += 1;
+            }
+        }
+        castle_count
+    }
 }
 
 fn input_number() -> usize {
@@ -774,6 +785,16 @@ fn main() {
                     }
                 }
             }
+            ctx.pause_a_key();
+        }
+
+        if ctx.get_castle_count(ctx.player_lord) <= 0 {
+            ctx.draw_screen();
+
+            println!("");
+
+            println!("GAME OVER");
+
             ctx.pause_a_key();
         }
         ctx.year += 1;
