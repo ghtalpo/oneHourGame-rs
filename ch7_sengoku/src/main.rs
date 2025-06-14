@@ -7,6 +7,7 @@ const TROOP_BASE: usize = 5;
 const TROOP_MAX: usize = 9;
 const TROOP_UNIT: usize = 1000;
 const START_YEAR: u16 = 1570;
+// const CHRONOLOGY_MAX: usize = 1024;
 
 #[derive(Clone, Copy, PartialEq)]
 enum LordEnum {
@@ -88,6 +89,7 @@ struct Context {
     castles: [Castle; CastleEnum::Max as usize],
     year: u16,
     player_lord: LordEnum,
+    chronology: String,
     rng: ThreadRng,
     g: Getch,
 }
@@ -199,6 +201,7 @@ impl Context {
             ],
             year: 0,
             player_lord: LordEnum::Max,
+            chronology: String::new(),
             rng: rand::rng(),
             g: Getch::new(),
         }
@@ -206,6 +209,8 @@ impl Context {
 
     pub fn init(&mut self) {
         self.year = START_YEAR;
+
+        self.chronology.clear();
 
         self.draw_screen();
     }
@@ -465,6 +470,18 @@ impl Context {
                 "{}은(는) {} 가문의 것이 됩니다.\n",
                 self.castles[castle].name, self.lords[offensive_lord as usize].family_name
             );
+
+            if self.get_castle_count(defensive_lord) <= 0 {
+                self.chronology.push_str(&format!(
+                    "{}년 {}{}이(가) {}에서 {}{}을(를) 멸망시키다.\n",
+                    self.year,
+                    self.lords[offensive_lord as usize].family_name,
+                    self.lords[offensive_lord as usize].first_name,
+                    self.castles[castle].name,
+                    self.lords[defensive_lord as usize].family_name,
+                    self.lords[defensive_lord as usize].first_name,
+                ));
+            }
         } else {
             println!(
                 "{}군 전멸!!\n",
@@ -765,10 +782,12 @@ fn main() {
                             ctx.castles[current_castle].troop_count,
                         );
                     } else {
-                        send_troop_count = std::cmp::min(
-                            send_troop_count,
-                            ctx.castles[current_castle].troop_count - (TROOP_BASE - 1),
-                        );
+                        if ctx.castles[current_castle].troop_count + 1 >= TROOP_BASE {
+                            send_troop_count = std::cmp::min(
+                                send_troop_count,
+                                ctx.castles[current_castle].troop_count + 1 - TROOP_BASE,
+                            );
+                        }
                     }
 
                     if send_troop_count > 0 {
