@@ -1,7 +1,6 @@
 use std::convert::TryFrom;
 use std::convert::TryInto;
 
-use clearscreen::clear;
 use getch_rs::Getch;
 use getch_rs::Key;
 // use rand::random_range;
@@ -605,6 +604,26 @@ fn main() {
                 ctx.pause_a_key();
 
                 ctx.battle(MonsterEnum::Boss);
+
+                if ctx.characters[CharacterEnum::Monster as usize].hp <= 0 {
+                    clearscreen::clear().unwrap();
+
+                    println!(
+                        "  마왕은 사라지고 세상은\n\
+                        멸망의 위기에서 구원되다!\n\
+                        \n\
+                         왕은 포고령을 내리고 용사를\n\
+                        찾아 헤맸지만, 아무도\n\
+                        본 사람은 없었다고 전해진다...\n\
+                        \n\
+                        \n\
+                                  THE END"
+                    );
+
+                    ctx.pause_a_key();
+
+                    std::process::exit(0);
+                }
             }
             _ => {
                 ctx.player_x = last_player_x;
