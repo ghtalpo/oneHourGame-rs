@@ -541,6 +541,12 @@ fn main() {
                 ctx.player_x = 6;
                 ctx.player_y = 12;
             }
+            'B' => {
+                ctx.current_map = MapEnum::BossCastle;
+
+                ctx.player_x = 6;
+                ctx.player_y = 15;
+            }
             '0' => {
                 println!(
                     "*[용사여!\n\
