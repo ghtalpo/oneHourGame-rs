@@ -12,6 +12,8 @@ use rand::rngs::ThreadRng;
 const SPELL_COST: i64 = 3;
 const MAP_WIDTH: usize = 16;
 const MAP_HEIGHT: usize = 16;
+const SCREEN_WIDTH: usize = 16;
+const SCREEN_HEIGHT: usize = 12;
 
 // [3-1]몬스터의 종류를 정의한다
 #[derive(Copy, Clone)]
@@ -405,15 +407,26 @@ impl Context {
     fn draw_map(&self) {
         clearscreen::clear().unwrap();
 
-        for y in 0..MAP_HEIGHT {
-            for x in 0..MAP_WIDTH {
-                if x == self.player_x && y == self.player_y {
+        let y0 = self.player_y as isize - SCREEN_HEIGHT as isize / 2;
+        let y1 = self.player_y as isize + SCREEN_HEIGHT as isize / 2;
+        let x0 = self.player_x as isize - SCREEN_WIDTH as isize / 2;
+        let x1 = self.player_x as isize + SCREEN_WIDTH as isize / 2;
+        for y in y0..y1 {
+            for x in x0..x1 {
+                if x == self.player_x as isize && y == self.player_y as isize {
                     print!("勇");
+                } else if x < 0
+                    || x >= MAP_WIDTH as isize
+                    || y < 0
+                    || y >= MAP_HEIGHT as isize
+                    || self.get_cell_xy(self.current_map, x as usize, y as usize) == 0
+                {
+                    match self.current_map {
+                        MapEnum::Field => print!("~~"),
+                        _ => {}
+                    }
                 } else {
-                    match self.map
-                        [self.current_map as usize * (MAP_HEIGHT * MAP_WIDTH) + y * MAP_WIDTH + x]
-                        as char
-                    {
+                    match self.get_cell_xy(self.current_map, x as usize, y as usize) as char {
                         '~' => print!("~~"),
                         '.' => print!(". "),
                         'M' => print!("MM"),
