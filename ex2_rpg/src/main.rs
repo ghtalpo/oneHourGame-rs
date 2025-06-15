@@ -200,9 +200,9 @@ impl Context {
             ],
             characters: [Character::default(), Character::default()],
             map,
-            current_map: MapEnum::Field,
-            player_x: 6,
-            player_y: 12,
+            current_map: MapEnum::KingCastle,
+            player_x: 4,
+            player_y: 6,
             rng: rand::rng(),
             g: Getch::new(),
         }
