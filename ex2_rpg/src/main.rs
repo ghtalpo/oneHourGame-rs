@@ -603,11 +603,27 @@ fn main() {
                 );
 
                 ctx.pause_a_key();
+
+                ctx.battle(MonsterEnum::Boss);
             }
             _ => {
                 ctx.player_x = last_player_x;
                 ctx.player_y = last_player_y;
             }
+        }
+
+        if ctx.characters[CharacterEnum::Player as usize].hp <= 0 {
+            ctx.init();
+
+            ctx.draw_map();
+
+            println!(
+                "* 오 용사여!\n\
+                신이 그대를 구원하셨다!\n\
+                용사에게 영광을!"
+            );
+
+            ctx.pause_a_key();
         }
     }
 }
