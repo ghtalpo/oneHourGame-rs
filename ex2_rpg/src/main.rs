@@ -495,6 +495,27 @@ fn main() {
             _ => {}
         }
 
+        if ctx.player_x < 0
+            || ctx.player_x >= MAP_WIDTH
+            || ctx.player_y < 0
+            || ctx.player_y >= MAP_HEIGHT
+            || ctx.get_cell_xy(
+                ctx.current_map,
+                ctx.player_x as usize,
+                ctx.player_y as usize,
+            ) == 0
+        {
+            match ctx.current_map {
+                MapEnum::KingCastle => {
+                    ctx.current_map = MapEnum::Field;
+
+                    ctx.player_x = 6;
+                    ctx.player_y = 12;
+                }
+                _ => {}
+            }
+        }
+
         match ctx.get_cell_xy(ctx.current_map, ctx.player_x, ctx.player_y) as char {
             '.' | '#' => {}
             _ => {
