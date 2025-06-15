@@ -398,6 +398,10 @@ impl Context {
         }
     }
 
+    fn get_cell_xy(&self, map: MapEnum, x: usize, y: usize) -> u8 {
+        self.map[map as usize * (MAP_HEIGHT * MAP_WIDTH) + y * MAP_WIDTH + x]
+    }
+
     fn draw_map(&self) {
         clearscreen::clear().unwrap();
 
@@ -413,7 +417,7 @@ impl Context {
                         '~' => print!("~~"),
                         '.' => print!(". "),
                         'M' => print!("MM"),
-                        '#' => print!("# "),
+                        '#' => print!("##"),
                         'K' => print!("王"),
                         'B' => print!("魔"),
                         _ => {}
@@ -443,6 +447,9 @@ fn main() {
     loop {
         ctx.draw_map();
 
+        let last_player_x = ctx.player_x;
+        let last_player_y = ctx.player_y;
+
         match ctx.g.getch() {
             Ok(Key::Char('w')) => ctx.player_y -= 1,
             Ok(Key::Char('s')) => ctx.player_y += 1,
@@ -450,6 +457,14 @@ fn main() {
             Ok(Key::Char('d')) => ctx.player_x += 1,
             Ok(Key::Esc) => std::process::exit(0),
             _ => {}
+        }
+
+        match ctx.get_cell_xy(ctx.current_map, ctx.player_x, ctx.player_y) as char {
+            '.' | '#' => {}
+            _ => {
+                ctx.player_x = last_player_x;
+                ctx.player_y = last_player_y;
+            }
         }
     }
 }
