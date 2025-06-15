@@ -458,6 +458,7 @@ impl Context {
                     match self.current_map {
                         MapEnum::Field => print!("~~"),
                         MapEnum::KingCastle => print!(". "),
+                        MapEnum::BossCastle => print!(". "),
                         _ => {}
                     }
                 } else {
@@ -473,6 +474,7 @@ impl Context {
                         'Y' => print!("Y "),
                         '0' => print!("王"),
                         '1' => print!("姫"),
+                        '2' => print!("魔"),
                         _ => {}
                     }
                 }
