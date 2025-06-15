@@ -443,6 +443,13 @@ fn main() {
     loop {
         ctx.draw_map();
 
-        ctx.pause_a_key();
+        match ctx.g.getch() {
+            Ok(Key::Char('w')) => ctx.player_y -= 1,
+            Ok(Key::Char('s')) => ctx.player_y += 1,
+            Ok(Key::Char('a')) => ctx.player_x -= 1,
+            Ok(Key::Char('d')) => ctx.player_x += 1,
+            Ok(Key::Esc) => std::process::exit(0),
+            _ => {}
+        }
     }
 }
