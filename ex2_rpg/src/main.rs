@@ -518,6 +518,12 @@ fn main() {
 
         match ctx.get_cell_xy(ctx.current_map, ctx.player_x, ctx.player_y) as char {
             '.' | '#' => {}
+            'K' => {
+                ctx.current_map = MapEnum::KingCastle;
+
+                ctx.player_x = 6;
+                ctx.player_y = 12;
+            }
             _ => {
                 ctx.player_x = last_player_x;
                 ctx.player_y = last_player_y;
