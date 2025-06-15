@@ -67,7 +67,7 @@ impl CommandEnum {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 enum MapEnum {
     Field = 0,
     KingCastle,
@@ -542,7 +542,11 @@ fn main() {
         }
 
         match ctx.get_cell_xy(ctx.current_map, ctx.player_x, ctx.player_y) as char {
-            '.' | '#' => {}
+            '.' | '#' => {
+                if ctx.current_map == MapEnum::Field && ctx.rng.random_range(0..16) == 0 {
+                    ctx.battle(MonsterEnum::Slime);
+                }
+            }
             'K' => {
                 ctx.current_map = MapEnum::KingCastle;
 
