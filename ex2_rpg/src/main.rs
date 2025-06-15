@@ -573,6 +573,15 @@ fn main() {
 
                 ctx.pause_a_key();
             }
+            '2' => {
+                println!(
+                    "*어리석은 인간이여!\n\
+                    나의 야망을 방해하는 자는\n\
+                    이 세상에서 사라지게 될 것이다!"
+                );
+
+                ctx.pause_a_key();
+            }
             _ => {
                 ctx.player_x = last_player_x;
                 ctx.player_y = last_player_y;
