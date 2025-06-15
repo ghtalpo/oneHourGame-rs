@@ -9,6 +9,8 @@ use rand::rngs::ThreadRng;
 
 // [2]상수를 정의하는 곳
 const SPELL_COST: i64 = 3;
+const MAP_WIDTH: usize = 16;
+const MAP_HEIGHT: usize = 16;
 
 // [3-1]몬스터의 종류를 정의한다
 #[derive(Copy, Clone)]
@@ -62,6 +64,11 @@ impl CommandEnum {
     }
 }
 
+enum MapEnum {
+    Field,
+    Max,
+}
+
 // [4-1]캐릭터의 구조체를 선언한다
 
 #[derive(Clone)]
@@ -96,12 +103,41 @@ impl Default for Character {
 struct Context {
     monsters: [Character; MonsterEnum::Max as usize],
     characters: [Character; CharacterEnum::Max as usize],
+    map: [u8; MapEnum::Max as usize * MAP_HEIGHT * MAP_WIDTH],
     rng: ThreadRng,
     g: Getch,
 }
 
 impl Context {
     pub fn new() -> Self {
+        let mut map = [0_u8; MAP_HEIGHT * MAP_WIDTH];
+
+        for (i, v) in vec![
+            "~~~~~~~~~~~~~~~~",
+            "~~MMMMM~~MMMM.~~",
+            "~M...M.##..M...~",
+            "~M.M.M.~~M.M.M.~",
+            "~M.M...~~M...M.~",
+            "~M.MMMM~~MMMM..~",
+            "~M..MM.~~~~~~#~~",
+            "~~M.M.~~~~~~~#~~",
+            "~~M.MM~~~~BMM..~",
+            "~~...MM~~M.MMM.~",
+            "~...~~M~~M...M.~",
+            "~..~~~K~~MMM.M.~",
+            "~..~~~.~~M...M.~",
+            "~......~~M.MM..~",
+            "~~....~~~~....~~",
+            "~~~~~~~~~~~~~~~~",
+        ]
+        .join("")
+        .to_string()
+        .bytes()
+        .enumerate()
+        {
+            map[i] = v;
+        }
+
         Self {
             monsters: [
                 // [5-1-1]MONSTER_PLAYER    플레이어
@@ -142,6 +178,7 @@ impl Context {
                 },
             ],
             characters: [Character::default(), Character::default()],
+            map,
             rng: rand::rng(),
             g: Getch::new(),
         }
