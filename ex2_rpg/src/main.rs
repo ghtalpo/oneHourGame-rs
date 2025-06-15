@@ -524,6 +524,24 @@ fn main() {
                 ctx.player_x = 6;
                 ctx.player_y = 12;
             }
+            '0' => {
+                println!(
+                    "*[용사여!\n\
+                    동쪽 마성의 마왕을\n\
+                    물리치고 세상을 구해주세요!"
+                );
+
+                ctx.pause_a_key();
+            }
+            '1' => {
+                println!(
+                    "*[신께 기도드립니다.!\n\
+                    오, 신이시여!\n\
+                    용사님에게 축복을!"
+                );
+
+                ctx.pause_a_key();
+            }
             _ => {
                 ctx.player_x = last_player_x;
                 ctx.player_y = last_player_y;
