@@ -482,6 +482,18 @@ impl Context {
             println!();
         }
         println!();
+
+        println!("{}", self.characters[CharacterEnum::Player as usize].name);
+
+        println!(
+            "HP:{}/{} MP:{}/{}",
+            self.characters[CharacterEnum::Player as usize].hp,
+            self.characters[CharacterEnum::Player as usize].max_hp,
+            self.characters[CharacterEnum::Player as usize].mp,
+            self.characters[CharacterEnum::Player as usize].max_mp,
+        );
+
+        println!();
     }
 
     fn pause_a_key(&self) {
@@ -576,6 +588,12 @@ fn main() {
                 );
 
                 ctx.pause_a_key();
+
+                ctx.characters[CharacterEnum::Player as usize].hp =
+                    ctx.characters[CharacterEnum::Player as usize].max_hp;
+
+                ctx.characters[CharacterEnum::Player as usize].mp =
+                    ctx.characters[CharacterEnum::Player as usize].max_mp;
             }
             '2' => {
                 println!(
