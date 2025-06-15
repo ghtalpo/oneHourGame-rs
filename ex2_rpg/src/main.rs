@@ -70,6 +70,7 @@ impl CommandEnum {
 #[derive(Copy, Clone)]
 enum MapEnum {
     Field = 0,
+    KingCastle,
     Max,
 }
 
@@ -117,7 +118,7 @@ struct Context {
 
 impl Context {
     pub fn new() -> Self {
-        let mut map = [0_u8; MAP_HEIGHT * MAP_WIDTH];
+        let mut map = [0_u8; MapEnum::Max as usize * MAP_HEIGHT * MAP_WIDTH];
 
         for (i, v) in vec![
             "~~~~~~~~~~~~~~~~",
@@ -136,6 +137,19 @@ impl Context {
             "~......~~M.MM..~",
             "~~....~~~~....~~",
             "~~~~~~~~~~~~~~~~",
+            "HHH.......HHH",
+            "H.H.......H.H",
+            "HHHHHHHHHHHHH",
+            ".H.........H.",
+            ".H.HHH.HHH.H.",
+            ".H.H0H.H1H.H.",
+            ".H.........H.",
+            ".HW.......WH.",
+            ".HY.......YH.",
+            "HHHHHH.HHHHHH",
+            "H.H~~~#~~~H.H",
+            "HHH~~~#~~~HHH",
+            "..............",
         ]
         .join("")
         .to_string()
