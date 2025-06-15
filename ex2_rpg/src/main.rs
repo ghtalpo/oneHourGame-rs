@@ -281,7 +281,7 @@ impl Context {
     // [6-3]명령을 선택하는 함수를 선언한다
     fn select_command(&mut self) {
         // [5-3]명령의 이름을 선언한다
-        const COMMAND_NAMES: [&'static str; 3] = ["싸운다", "주문", "도망친다"];
+        const COMMAND_NAMES: [&str; 3] = ["싸운다", "주문", "도망친다"];
 
         // [6-3-1]플레이어의 명령을 초기화한다
         self.characters[CharacterEnum::Player as usize].command = CommandEnum::Fight;
@@ -558,8 +558,8 @@ fn main() {
             || ctx.player_y >= MAP_HEIGHT
             || ctx.get_cell_xy(
                 ctx.current_map,
-                ctx.player_x as usize,
-                ctx.player_y as usize,
+                ctx.player_x,
+                ctx.player_y,
             ) == 0
         {
             // [6-6-13]현재 맵에 따라 분기한다
