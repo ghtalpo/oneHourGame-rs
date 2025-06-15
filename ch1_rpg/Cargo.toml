@@ -1,0 +1,9 @@
+[package]
+name = "ch1_rpg"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+clearscreen = "4.0.1"
+getch-rs = "0.2.0"
+rand = "0.9.1"
