@@ -1,6 +1,7 @@
 use std::convert::TryFrom;
 use std::convert::TryInto;
 
+use clearscreen::clear;
 use getch_rs::Getch;
 use getch_rs::Key;
 // use rand::random_range;
@@ -64,8 +65,9 @@ impl CommandEnum {
     }
 }
 
+#[derive(Copy, Clone)]
 enum MapEnum {
-    Field,
+    Field = 0,
     Max,
 }
 
@@ -104,6 +106,7 @@ struct Context {
     monsters: [Character; MonsterEnum::Max as usize],
     characters: [Character; CharacterEnum::Max as usize],
     map: [u8; MapEnum::Max as usize * MAP_HEIGHT * MAP_WIDTH],
+    current_map: MapEnum,
     rng: ThreadRng,
     g: Getch,
 }
@@ -179,6 +182,7 @@ impl Context {
             ],
             characters: [Character::default(), Character::default()],
             map,
+            current_map: MapEnum::Field,
             rng: rand::rng(),
             g: Getch::new(),
         }
@@ -389,6 +393,35 @@ impl Context {
             }
         }
     }
+
+    fn draw_map(&self) {
+        clearscreen::clear().unwrap();
+
+        for y in 0..MAP_HEIGHT {
+            for x in 0..MAP_WIDTH {
+                match self.map
+                    [self.current_map as usize * (MAP_HEIGHT * MAP_WIDTH) + y * MAP_WIDTH + x]
+                    as char
+                {
+                    '~' => print!("~~"),
+                    '.' => print!(". "),
+                    'M' => print!("MM"),
+                    '#' => print!("# "),
+                    'K' => print!("王"),
+                    'B' => print!("魔"),
+                    _ => {}
+                }
+            }
+            println!();
+        }
+        println!();
+    }
+
+    fn pause_a_key(&self) {
+        if let Ok(Key::Esc) = self.g.getch() {
+            std::process::exit(0);
+        }
+    }
 }
 
 fn main() {
@@ -398,5 +431,10 @@ fn main() {
     ctx.init();
 
     // [6-6-3]전투 장면의 함수를 호출한다
-    ctx.battle(MonsterEnum::Boss);
+    // ctx.battle(MonsterEnum::Boss);
+    loop {
+        ctx.draw_map();
+
+        ctx.pause_a_key();
+    }
 }
