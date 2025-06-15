@@ -107,6 +107,8 @@ struct Context {
     characters: [Character; CharacterEnum::Max as usize],
     map: [u8; MapEnum::Max as usize * MAP_HEIGHT * MAP_WIDTH],
     current_map: MapEnum,
+    player_x: usize,
+    player_y: usize,
     rng: ThreadRng,
     g: Getch,
 }
@@ -183,6 +185,8 @@ impl Context {
             characters: [Character::default(), Character::default()],
             map,
             current_map: MapEnum::Field,
+            player_x: 6,
+            player_y: 12,
             rng: rand::rng(),
             g: Getch::new(),
         }
@@ -399,17 +403,21 @@ impl Context {
 
         for y in 0..MAP_HEIGHT {
             for x in 0..MAP_WIDTH {
-                match self.map
-                    [self.current_map as usize * (MAP_HEIGHT * MAP_WIDTH) + y * MAP_WIDTH + x]
-                    as char
-                {
-                    '~' => print!("~~"),
-                    '.' => print!(". "),
-                    'M' => print!("MM"),
-                    '#' => print!("# "),
-                    'K' => print!("王"),
-                    'B' => print!("魔"),
-                    _ => {}
+                if x == self.player_x && y == self.player_y {
+                    print!("勇");
+                } else {
+                    match self.map
+                        [self.current_map as usize * (MAP_HEIGHT * MAP_WIDTH) + y * MAP_WIDTH + x]
+                        as char
+                    {
+                        '~' => print!("~~"),
+                        '.' => print!(". "),
+                        'M' => print!("MM"),
+                        '#' => print!("# "),
+                        'K' => print!("王"),
+                        'B' => print!("魔"),
+                        _ => {}
+                    }
                 }
             }
             println!();
